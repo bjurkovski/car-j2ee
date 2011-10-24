@@ -9,7 +9,8 @@
 <!-- in the project's Project Properties dialog box.-->
 <project name="Banque-war" default="default" basedir=".">
     <description>Builds, tests, and runs the project Banque-war.</description>
-    <import file="nbproject/build-impl.xml"/>
+    <import file="nbproject/build-gwt.xml"/>
+	<import file="nbproject/build-impl.xml"/>
     <!--
 
     There exist several targets which are by default empty and which can be 
