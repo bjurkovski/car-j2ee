@@ -1,0 +1,33 @@
+Actors:
+	Client
+	Administrator
+
+Models:
+	Person
+		id, name, lastName, age, address, etc (get form from the internet), login, password
+		+Client
+			accounts	
+		+Administrator
+			post
+	
+	Account
+		id, balance, Transactions
+		
+	Transactions
+		id, operation, amount, from, to
+			
+
+Tasks:
+	Create clients
+	Destroy clients
+	Search clients
+	Create account
+	Destroy account
+	Search account
+	Show all clients
+	Show all accounts
+	Make payment
+	Receive payment
+	Transfer
+	Link Accounts <-> Client
+	Search for account (Show linked Client)
