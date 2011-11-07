@@ -31,3 +31,9 @@ Tasks:
 	Transfer
 	Link Accounts <-> Client
 	Search for account (Show linked Client)
+
+Views:
+	Client Profile (Client)
+		
+	Manage Clients (Admin)
+	Manage Accounts (Admin)
