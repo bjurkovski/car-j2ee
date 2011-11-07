@@ -25,9 +25,19 @@ public class EntityManager {
             Map<String, String> properties = new HashMap<String, String>();
             properties.put("javax.persistence.jdbc.user", "root");
             properties.put("javax.persistence.jdbc.password", "root");
-            emf = Persistence.createEntityManagerFactory("objectdb://localhost:3306/banque_dev", properties);
+            emf = Persistence.createEntityManagerFactory("jdbc:mysql://localhost:3306/banque_dev", properties);
             em = emf.createEntityManager();
         }
         return em;
     }
+    
+    @Override
+    protected void finalize() throws Throwable{
+        super.finalize();
+        
+        em.close();
+        emf.close();       
+    }
+    
+    
 }

@@ -19,7 +19,7 @@ import javax.persistence.Temporal;
  * @author ricardo
  */
 @Entity
-public abstract class Person implements Serializable {
+public class Person implements Serializable {
     public static final int MALE = 0;
     public static final int FEMALE = 1;
     
@@ -40,10 +40,12 @@ public abstract class Person implements Serializable {
     public Person() {
     }
 
-    public Person(String name, String lastName, String password) {
+    public Person(String name, String lastName, String password, int gender, Date dateOfBirth) {
         this.name = name;
         this.lastName = lastName;
         this.password = password;
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
     }
     
     public Long getId() {
