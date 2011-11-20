@@ -20,19 +20,20 @@ import javax.persistence.Temporal;
  */
 @Entity
 public class Person implements Serializable {
-    public static final int MALE = 0;
-    public static final int FEMALE = 1;
-    
+
+    public enum Gender {
+
+        MALE, FEMALE
+    }
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
     private String name;
     private String lastName;
     //TODO: Address
     private String password;
-    private int gender;
+    private Gender gender;
     //TODO: BirthCountry?
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date dateOfBirth;
@@ -40,20 +41,16 @@ public class Person implements Serializable {
     public Person() {
     }
 
-    public Person(String name, String lastName, String password, int gender, Date dateOfBirth) {
+    public Person(String name, String lastName, String password, Gender gender, Date dateOfBirth) {
         this.name = name;
         this.lastName = lastName;
         this.password = password;
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
     }
-    
+
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Date getDateOfBirth() {
@@ -64,11 +61,11 @@ public class Person implements Serializable {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public int getGender() {
+    public Gender getGender() {
         return gender;
     }
 
-    public void setGender(int gender) {
+    public void setGender(Gender gender) {
         this.gender = gender;
     }
 
@@ -88,15 +85,19 @@ public class Person implements Serializable {
         this.name = name;
     }
 
+    /**
+     * @return Hashed Password
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * @param password Already Hashed password
+     */
     public void setPassword(String password) {
         this.password = password;
     }
-    
-    //TODO return hashed password
 
     @Override
     public int hashCode() {
@@ -107,7 +108,6 @@ public class Person implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof Person)) {
             return false;
         }
@@ -122,5 +122,4 @@ public class Person implements Serializable {
     public String toString() {
         return "Person{" + "id=" + id + ", name=" + name + ", lastName=" + lastName + '}';
     }
-
 }
