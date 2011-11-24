@@ -4,6 +4,7 @@
  */
 package org.banque.managers;
 
+import org.banque.managers.interfaces.IPersonManagerLocal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -25,17 +26,17 @@ public class PersonManager implements IPersonManagerLocal {
     @PersistenceContext(unitName = "BanquePU")
     private EntityManager em;
 
-    @Override
-    public Person createPerson(Person person) throws BanqueException {
+    private Person createPerson(Person person) throws BanqueException {
         person.setPassword(hashPassword(person.getPassword()));
         em.persist(person);
         return person;
     }
 
     @Override
-    public Person createPerson(String name, String lastName, String password, Date dateOfBirth, Gender gender) throws BanqueException {
-        Person aPerson = new Person(name, lastName, password, gender, dateOfBirth);
-        return createPerson(aPerson);
+    public Person createPerson(String name, String lastName, String password, Date dateOfBirth, Gender gender, String address) throws BanqueException {
+        //TODO Take into consideration address
+        Person person = new Person(name, lastName, password, gender, dateOfBirth, address);
+        return createPerson(person);
     }
 
     @Override
@@ -45,9 +46,9 @@ public class PersonManager implements IPersonManagerLocal {
 
     @Override
     public void deletePerson(long id) {
-        Person aPerson = findPerson(id);
-        if (aPerson != null) {
-            em.remove(em.merge(aPerson));
+        Person person = findPerson(id);
+        if (person != null) {
+            em.remove(em.merge(person));
         }
     }
 
@@ -57,13 +58,13 @@ public class PersonManager implements IPersonManagerLocal {
      * @return the hashed password
      * @throws BanqueException if the password could not be hashed
      */
-    private String hashPassword(String password) throws BanqueException {
+    protected static String hashPassword(String password) throws BanqueException {
         MessageDigest md;
         try {
             md = MessageDigest.getInstance("SHA-1");
-        } catch (NoSuchAlgorithmException ex) {
+        } catch (Exception ex) {
             System.out.println("Password Encryption Failed " + ex.getMessage());
-            throw new BanqueException(0);
+            throw new BanqueException(BanqueException.ErrorType.ERROR_HASHING_PASSWORD);
         }
 
         byte[] digest = md.digest(password.getBytes());

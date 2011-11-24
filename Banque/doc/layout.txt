@@ -4,7 +4,7 @@ Actors:
 
 Models:
 	Person
-		id, name, lastName, age, address, etc (get form from the internet), login, password
+		id, name, lastName, address, email, etc (get form from the internet), login, password
 		+Client
 			accounts	
 		+Administrator
@@ -18,22 +18,32 @@ Models:
 			
 
 Tasks:
-	Create clients
-	Destroy clients
-	Search clients
-	Create account
-	Destroy account
-	Search account
-	Show all clients
-	Show all accounts
+	Validate client
+	(Done, tested) Store clients
+			(Done, tested)	Using a client created before and passing it
+			(Done, tested)	Passing all the fields of a client
+	(Done, tested) Destroy clients
+	(Done) Update Clients
+		(Done) Change Password
+	(Done) Search clients
+		(Done) by id
+		(Done) by name
+		(Done) by dateOfSubscription
+	(Done, tested) Show all clients
+	(Done) Create account
+	(Done) Destroy account
+	(Done) Search account
+		(Done) by id
+		(Done) positive balance
+		(Done) negative balance
+	(Done) Show all accounts
+	Transfer
 	Make payment
 	Receive payment
-	Transfer
-	Link Accounts <-> Client
-	Search for account (Show linked Client)
+	(Done) Link Accounts <-> Client
+	(Native) Search for account (Show linked Client)
 
 Views:
 	Client Profile (Client)
-		
 	Manage Clients (Admin)
 	Manage Accounts (Admin)

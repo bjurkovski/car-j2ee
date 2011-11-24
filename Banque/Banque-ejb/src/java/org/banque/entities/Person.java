@@ -10,6 +10,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.Temporal;
 
 /**
@@ -19,38 +21,48 @@ import javax.persistence.Temporal;
  * @author ricardo
  */
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Person implements Serializable {
 
-    public enum Gender {
+    public static enum Gender {
 
         MALE, FEMALE
     }
-    private static final long serialVersionUID = 1L;
+    protected static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-    private String name;
-    private String lastName;
-    //TODO: Address
-    private String password;
-    private Gender gender;
-    //TODO: BirthCountry?
+    protected Long id;
+    protected String name;
+    protected String lastName;
+    //@OneToOne(cascade = CascadeType.ALL)
+    protected String address;
+    protected String password;
+    protected Gender gender;
     @Temporal(javax.persistence.TemporalType.DATE)
-    private Date dateOfBirth;
+    protected Date dateOfBirth;
 
     public Person() {
     }
 
-    public Person(String name, String lastName, String password, Gender gender, Date dateOfBirth) {
+    public Person(String name, String lastName, String password, Gender gender, Date dateOfBirth, String address) {
         this.name = name;
         this.lastName = lastName;
         this.password = password;
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
+        this.address = address;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public Date getDateOfBirth() {
