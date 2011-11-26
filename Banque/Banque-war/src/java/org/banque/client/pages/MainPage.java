@@ -7,8 +7,10 @@ package org.banque.client.pages;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -18,6 +20,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class MainPage implements WebPage {
     protected DockPanel mainPanel = new DockPanel();
     protected MenuBar menuBar = new MenuBar();
+    protected VerticalPanel menuPanel = new VerticalPanel();
     
     protected Widget currentPage = null;
     protected ManageClientsPage manageClientsPage = new ManageClientsPage();
@@ -54,8 +57,11 @@ public class MainPage implements WebPage {
          */
         menuBar.addItem(new MenuItem("Manage Clients", new MenuAction("Manage Clients")));
         menuBar.addItem(new MenuItem("Manage Accounts", new MenuAction("Manage Accounts")));
+        
+        menuPanel.add(new Label("Societé Enecarré"));
+        menuPanel.add(menuBar);
 
-        mainPanel.add(menuBar, DockPanel.NORTH);
+        mainPanel.add(menuPanel, DockPanel.NORTH);
     }
     
     public Widget getWidget() {
