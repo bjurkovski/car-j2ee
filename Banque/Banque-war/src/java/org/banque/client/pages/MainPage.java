@@ -57,8 +57,11 @@ public class MainPage implements WebPage {
          */
         menuBar.addItem(new MenuItem("Manage Clients", new MenuAction("Manage Clients")));
         menuBar.addItem(new MenuItem("Manage Accounts", new MenuAction("Manage Accounts")));
+        menuBar.setWidth("960px");
         
-        menuPanel.add(new Label("Societé Enecarré"));
+        Label title = new Label("Banque du Brésil");
+        title.setStyleName("title");
+        menuPanel.add(title);
         menuPanel.add(menuBar);
 
         mainPanel.add(menuPanel, DockPanel.NORTH);
