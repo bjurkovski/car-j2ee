@@ -41,4 +41,9 @@ public class BanqueException extends Exception {
     public ErrorType getId() {
         return id;
     }
+
+    @Override
+    public String getMessage() {
+        return "Error ID: " + id + "\n Original Error message: " + super.getMessage();
+    }
 }
