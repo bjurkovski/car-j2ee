@@ -7,8 +7,7 @@ package org.banque.managers.interfaces;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Local;
-import org.banque.entities.Client;
-import org.banque.entities.Person.Gender;
+import org.banque.dtos.ClientDTO;
 import org.banque.exceptions.BanqueException;
 
 /**
@@ -24,7 +23,7 @@ public interface IClientManagerLocal {
      * @return the persisted client with a unique id
      * @throws BanqueException DATABASE_ERROR
      */
-    public Client createClient(Client client) throws BanqueException;
+    public ClientDTO createClient(ClientDTO client) throws BanqueException;
 
     /**
      * Creates a new client in the database assigning him an id
@@ -32,7 +31,7 @@ public interface IClientManagerLocal {
      * @return the persisted client with a unique id
      * @throws BanqueException DATABASE_ERROR
      */
-    public Client createClient(String name, String lastName, String password, Gender gender, Date dateOfBirth, String address, String email) throws BanqueException;
+    public ClientDTO createClient(String name, String lastName, String password, ClientDTO.Gender gender, Date dateOfBirth, String address, String email) throws BanqueException;
 
     /**
      * Searches the database for the client and deletes him
@@ -49,7 +48,7 @@ public interface IClientManagerLocal {
      * @return the updated client
      * @throws BanqueException DATABASE_ERROR or CLIENT_NOT_FOUND
      */
-    public Client updateClient(Client client) throws BanqueException;
+    public ClientDTO updateClient(ClientDTO client) throws BanqueException;
 
     /**
      * Finds the client whose id is given
@@ -57,30 +56,22 @@ public interface IClientManagerLocal {
      * @return the client or null if the client doesn't exist
      * @throws BanqueException DATABASE_ERROR
      */
-    public Client findClient(Long id) throws BanqueException;
+    public ClientDTO findClient(Long id) throws BanqueException;
 
     /**
      * Finds all the clients of the Bank.
      * @return a list of all the clients ordered by id
      * @throws BanqueException DATABASE_ERROR
      */
-    public List<Client> findAllClients() throws BanqueException;
+    public List<ClientDTO> findAllClients() throws BanqueException;
 
     /**
      * Gets a list of all the clients with the partial name/last name
-     * @param name a part of the client's name
+     * @param searchString a part of the client's name or last name
      * @return a list of clients that comply to the query
      * @throws BanqueException DATABASE_ERROR
      */
-    public List<Client> findClientsByName(String name) throws BanqueException;
-
-    /**
-     * Gets a list of all the clients with the partial name/last name
-     * @param name a part of the client's name
-     * @return a list of clients that comply to the query
-     * @throws BanqueException DATABASE_ERROR
-     */
-    public List<Client> findClientsByLastName(String lastName) throws BanqueException;
+    public List<ClientDTO> findClients(String searchString) throws BanqueException;
 
     /**
      * Gets a list of all the clients that opened an account on the <date>
@@ -88,7 +79,7 @@ public interface IClientManagerLocal {
      * @return a list of clients that comply to the query
      * @throws BanqueException DATABASE_ERROR
      */
-    public List<Client> findClientsByDateOfSubscription(Date date) throws BanqueException;
+    public List<ClientDTO> findClientsByDateOfSubscription(Date date) throws BanqueException;
 
     /**
      * Used for logging in to the client's page. This method validates the login
@@ -98,7 +89,7 @@ public interface IClientManagerLocal {
      * @return client that has been authenticated or null if authentication failed.
      * @throws BanqueException DATABASE_ERROR
      */
-    public Client authenticateClient(Long id, String password) throws BanqueException;
+    public ClientDTO authenticateClient(Long id, String password) throws BanqueException;
 
     /**
      * Changes the client's password and updates the information on the database
@@ -107,13 +98,5 @@ public interface IClientManagerLocal {
      * @return the updated client
      * @throws BanqueException DATABASE_ERROR or CLIENT_NOT_FOUND
      */
-    public Client changePassword(Long id, String password) throws BanqueException;
-    
-    /**
-     * Validates a client before trying to store it or update it on the database
-     * @param client the client to be analyzed
-     * @return true if its possible to save the client or an exception otherwise
-     * @throws BanqueException
-     */
-    public boolean validateClient( Client client ) throws BanqueException;
+    public ClientDTO changePassword(Long id, String password) throws BanqueException;
 }

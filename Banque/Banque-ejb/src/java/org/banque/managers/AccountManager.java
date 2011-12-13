@@ -5,12 +5,12 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import org.banque.entities.Account;
 import org.banque.entities.Client;
 import org.banque.entities.Transaction;
 import org.banque.exceptions.BanqueException;
 import org.banque.managers.interfaces.IAccountManagerLocal;
+import org.banque.utils.Email;
 
 /**
  *
@@ -35,7 +35,7 @@ public class AccountManager implements IAccountManagerLocal {
 
         Account account = new Account(owner, alertWhenNegative);
         try {
-            owner.getAccounts().add(account);
+//            owner.getAccounts().add(account);
             em.persist(account);
             return account;
         } catch (Exception e) {
@@ -73,7 +73,7 @@ public class AccountManager implements IAccountManagerLocal {
         }
         try {
             Client owner = account.getOwner();
-            owner.getAccounts().remove(account);
+//            owner.getAccounts().remove(account);
             em.remove(em.merge(account));
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
@@ -83,19 +83,22 @@ public class AccountManager implements IAccountManagerLocal {
 
     @Override
     public Account findAccount(Long id) throws BanqueException {
-        try {
-            return em.find(Account.class, id);
-        } catch (Exception e) {
-            System.out.println("Original Error Message: " + e.getMessage());
-            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        if (id == null) {
+            throw new BanqueException(BanqueException.ErrorType.ACCOUNT_NOT_FOUND);
+        }
+
+        Account a = em.find(Account.class, id);
+        if (a != null) {
+            return a;
+        } else {
+            throw new BanqueException(BanqueException.ErrorType.ACCOUNT_NOT_FOUND);
         }
     }
 
     @Override
     public List<Account> findAllAccounts() throws BanqueException {
         try {
-            Query query = em.createNamedQuery(Account.FIND_ALL);
-            return query.getResultList();
+            return em.createNamedQuery(Account.FIND_ALL).getResultList();
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
@@ -105,8 +108,7 @@ public class AccountManager implements IAccountManagerLocal {
     @Override
     public List<Account> findNegativeBalanceAccounts() throws BanqueException {
         try {
-            Query query = em.createNamedQuery(Account.FIND_NEGATIVE);
-            return query.getResultList();
+            return em.createNamedQuery(Account.FIND_NEGATIVE).getResultList();
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
@@ -116,8 +118,7 @@ public class AccountManager implements IAccountManagerLocal {
     @Override
     public List<Account> findPositiveBalanceAccounts() throws BanqueException {
         try {
-            Query query = em.createNamedQuery(Account.FIND_POSITIVE);
-            return query.getResultList();
+            return em.createNamedQuery(Account.FIND_POSITIVE).getResultList();
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
@@ -137,6 +138,7 @@ public class AccountManager implements IAccountManagerLocal {
     @Override
     public Transaction makeTransaction(Account source, Account dest, double amount) throws BanqueException {
         Transaction transaction = new Transaction(amount, source, dest, new Date());
+
         //This method can make one of the accounts negative.
         if (source == null || dest == null || findAccount(source.getId()) == null || findAccount(dest.getId()) == null) {
             throw new BanqueException(BanqueException.ErrorType.ACCOUNT_NOT_FOUND);
@@ -156,7 +158,7 @@ public class AccountManager implements IAccountManagerLocal {
         updateAccount(dest);
         updateAccount(source);
         if (source.isNegative() && source.isAlertWhenNegative()) {
-            //TODO Call sell Email
+            alertNegative(source);
         }
 
         return transaction;
@@ -181,5 +183,32 @@ public class AccountManager implements IAccountManagerLocal {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
+    }
+
+    /**
+     * Sends an email to the user alerting him that his balance is negative.
+     * This method executes in asynchronously.
+     * @param account that has become negative
+     */
+    protected void alertNegative(Account account) {
+        Client owner = account.getOwner();
+        final String to = owner.getEmail();
+        final String subject = "Alert From Banque EJB";
+        final String content = "Dear " + owner.getName() + " " + owner.getLastName()
+                + "\n Unfortunately, the balance in your account number " + account.getId()
+                + "has become negative, please... do something";
+
+        Runnable sendEmail = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    Email.sendEmail(to, subject, content);
+                } catch (Exception e) {
+                    System.out.println("Error Sending the email: " + e.getMessage());
+                }
+            }
+        };
+        sendEmail.run();
     }
 }

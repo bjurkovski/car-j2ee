@@ -4,15 +4,9 @@
  */
 package org.banque.managers;
 
-import org.banque.managers.interfaces.IPersonManagerLocal;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import org.banque.dtos.PersonDTO;
 import org.banque.entities.Person;
-import org.banque.entities.Person.Gender;
 import org.banque.exceptions.BanqueException;
 
 /**
@@ -20,35 +14,32 @@ import org.banque.exceptions.BanqueException;
  * @author bjurkovski
  * @author wasser
  */
-@Stateless
-public class PersonManager implements IPersonManagerLocal {
+public abstract class PersonManager {
 
-    @PersistenceContext(unitName = "BanquePU")
-    private EntityManager em;
-
-    private Person createPerson(Person person) throws BanqueException {
-        person.setPassword(hashPassword(person.getPassword()));
-        em.persist(person);
-        return person;
+    /**
+     * Returns a gender that can be used in the DTO objects instead of the entities
+     * one
+     * @param gender
+     * @return 
+     */
+    protected static PersonDTO.Gender getGenderDTO(Person.Gender gender) {
+        if (gender == Person.Gender.MALE) {
+            return PersonDTO.Gender.MALE;
+        } else {
+            return PersonDTO.Gender.FEMALE;
+        }
     }
 
-    @Override
-    public Person createPerson(String name, String lastName, String password, Date dateOfBirth, Gender gender, String address) throws BanqueException {
-        //TODO Take into consideration address
-        Person person = new Person(name, lastName, password, gender, dateOfBirth, address);
-        return createPerson(person);
-    }
-
-    @Override
-    public Person findPerson(long id) {
-        return em.find(Person.class, id);
-    }
-
-    @Override
-    public void deletePerson(long id) {
-        Person person = findPerson(id);
-        if (person != null) {
-            em.remove(em.merge(person));
+    /**
+     * Returns a gender that can be used in the entities instead of the dtos
+     * @param gender
+     * @return 
+     */
+    protected static Person.Gender getGenderEntity(PersonDTO.Gender gender) {
+        if (gender == PersonDTO.Gender.MALE) {
+            return Person.Gender.MALE;
+        } else {
+            return Person.Gender.FEMALE;
         }
     }
 

@@ -6,6 +6,7 @@
             <name>Banque-ejb</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <included-library dirs="200">libs.ejb3-persistence.classpath</included-library>
+            <included-library dirs="200">file.reference.smtp.jar</included-library>
             <source-roots>
                 <root id="src.dir"/>
             </source-roots>

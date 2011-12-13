@@ -1,6 +1,7 @@
 package org.banque.managers;
 
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,8 +9,8 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import org.banque.dtos.ClientDTO;
 import org.banque.entities.Client;
-import org.banque.entities.Person.Gender;
 import org.banque.exceptions.BanqueException;
 import org.banque.managers.interfaces.IClientManagerLocal;
 
@@ -18,22 +19,22 @@ import org.banque.managers.interfaces.IClientManagerLocal;
  * @author wasser
  */
 @Stateless
-public class ClientManager implements IClientManagerLocal {
+public class ClientManager extends PersonManager implements IClientManagerLocal {
 
     @PersistenceContext(unitName = "BanquePU")
     private EntityManager em;
 
     @Override
-    public Client createClient(Client client) throws BanqueException {
+    public ClientDTO createClient(ClientDTO client) throws BanqueException {
         return createClient(client.getName(), client.getLastName(), client.getPassword(), client.getGender(), client.getDateOfBirth(), client.getAddress(), client.getEmail());
     }
 
     @Override
-    public Client createClient(String name, String lastName, String password, Gender gender, Date dateOfBirth, String address, String email) throws BanqueException {
-        Client clientDB = new Client(name, lastName, PersonManager.hashPassword(password), gender, dateOfBirth, address, email);
+    public ClientDTO createClient(String name, String lastName, String password, ClientDTO.Gender gender, Date dateOfBirth, String address, String email) throws BanqueException {
+        Client clientDB = new Client(name, lastName, PersonManager.hashPassword(password), PersonManager.getGenderEntity(gender), dateOfBirth, address, email);
         try {
             em.persist(clientDB);
-            return clientDB;
+            return createClientDTO(clientDB);
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
@@ -42,10 +43,7 @@ public class ClientManager implements IClientManagerLocal {
 
     @Override
     public void deleteClient(Long id) throws BanqueException {
-        Client client = findClient(id);
-        if (client == null) {
-            throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
-        }
+        Client client = findClientDB(id);
         try {
             em.remove(em.merge(client));
         } catch (Exception e) {
@@ -55,24 +53,22 @@ public class ClientManager implements IClientManagerLocal {
     }
 
     @Override
-    public Client updateClient(Client client) throws BanqueException {
+    public ClientDTO updateClient(ClientDTO client) throws BanqueException {
         if (client == null) {
             throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
         }
-        Client clientDB = findClient(client.getId());
-        if (clientDB == null) {
-            throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
-        }
+        Client clientDB = findClientDB(client.getId());
+
         try {
-            clientDB.setAccounts(client.getAccounts());
+            //clientDB.setAccounts(client.getAccounts());
             clientDB.setAddress(client.getAddress());
             clientDB.setDateOfBirth(client.getDateOfBirth());
-            clientDB.setGender(client.getGender());
+            clientDB.setGender(PersonManager.getGenderEntity(client.getGender()));
             clientDB.setLastName(client.getLastName());
             clientDB.setName(client.getName());
             clientDB.setPassword(client.getPassword());
             clientDB.setEmail(client.getEmail());
-            return em.merge(clientDB);
+            return createClientDTO(em.merge(clientDB));
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
@@ -80,86 +76,100 @@ public class ClientManager implements IClientManagerLocal {
     }
 
     @Override
-    public Client findClient(Long id) throws BanqueException {
+    public ClientDTO findClient(Long id) throws BanqueException {
+        return createClientDTO(findClientDB(id));
+    }
+
+    protected Client findClientDB(Long id) throws BanqueException {
+        if (id == null) {
+            throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
+        }
+
+        Client c = em.find(Client.class, id);
+        if (c == null) {
+            throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
+        }
+        return c;
+    }
+
+    @Override
+    public List<ClientDTO> findAllClients() throws BanqueException {
+        LinkedList<ClientDTO> _return = new LinkedList<ClientDTO>();
         try {
-            return em.find(Client.class, id);
-        } catch (Exception e) {
-            System.out.println("Original Error Message: " + e.getMessage());
-            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
-        }
-    }
-
-    @Override
-    public List<Client> findAllClients() throws BanqueException {
-        try {
-            Query query = em.createNamedQuery(Client.FIND_ALL);
-            return query.getResultList();
-        } catch (Exception e) {
-            System.out.println("Original Error Message: " + e.getMessage());
-            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
-        }
-    }
-
-    @Override
-    public List<Client> findClientsByName(String name) throws BanqueException {
-        try {
-            Query query = em.createNamedQuery("findClientsByName");
-            query.setParameter("name", name);
-            return query.getResultList();
-        } catch (Exception e) {
-            System.out.println("Original Error Message: " + e.getMessage());
-            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
-        }
-    }
-
-    @Override
-    public List<Client> findClientsByLastName(String lastName) throws BanqueException {
-        try {
-            Query query = em.createNamedQuery("findClientsByLastName");
-            query.setParameter("lastName", lastName);
-            return query.getResultList();
-        } catch (Exception e) {
-            System.out.println("Original Error Message: " + e.getMessage());
-            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
-        }
-    }
-
-    @Override
-    public List<Client> findClientsByDateOfSubscription(Date date) throws BanqueException {
-        try {
-            Query query = em.createNamedQuery("findClientsBySubscriptionDate");
-            query.setParameter("subsdate", date);
-            return query.getResultList();
-        } catch (Exception e) {
-            System.out.println("Original Error Message: " + e.getMessage());
-            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
-        }
-    }
-
-    @Override
-    public Client authenticateClient(Long id, String password) throws BanqueException {
-        Client client = findClient(id);
-        if (client != null) {
-            if (PersonManager.hashPassword(password).equals(client.getPassword())) {
-                return client;
+            List<Client> results = em.createNamedQuery(Client.FIND_ALL).getResultList();
+            for (Client c : results) {
+                _return.add(createClientDTO(c));
             }
+            return _return;
+
+        } catch (Exception e) {
+            System.out.println("Original Error Message: " + e.getMessage());
+            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        }
+    }
+
+    @Override
+    public List<ClientDTO> findClients(String searchString) throws BanqueException {
+        List<ClientDTO> _return = new LinkedList<ClientDTO>();
+        try {
+            Query query = em.createNamedQuery(Client.FIND_PARTIALLY).setParameter("partial", "%" + searchString + "%");
+            List<Client> results = query.getResultList();
+            for (Client c : results) {
+                _return.add(createClientDTO(c));
+            }
+            return _return;
+        } catch (Exception e) {
+            System.out.println("Original Error Message: " + e.getMessage());
+            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        }
+    }
+
+    @Override
+    public List<ClientDTO> findClientsByDateOfSubscription(Date date) throws BanqueException {
+        LinkedList<ClientDTO> _return = new LinkedList<ClientDTO>();
+        try {
+            Query query = em.createNamedQuery(Client.FIND_BY_SUBSCRIPTION_DATE).setParameter("subsdate", date);
+            List<Client> results = query.getResultList();
+            for (Client c : results) {
+                _return.add(createClientDTO(c));
+            }
+            return _return;
+        } catch (Exception e) {
+            System.out.println("Original Error Message: " + e.getMessage());
+            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        }
+    }
+
+    @Override
+    public ClientDTO authenticateClient(Long id, String password) throws BanqueException {
+        ClientDTO client = findClient(id);
+        if (PersonManager.hashPassword(password).equals(client.getPassword())) {
+            return client;
         }
         return null;
     }
 
     @Override
-    public Client changePassword(Long id, String password) throws BanqueException {
-        Client client = findClient(id);
-
-        if (client == null) {
-            throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
-        }
+    public ClientDTO changePassword(Long id, String password) throws BanqueException {
+        ClientDTO client = findClient(id);
         client.setPassword(PersonManager.hashPassword(password));
         return updateClient(client);
     }
 
-    @Override
-    public boolean validateClient(Client client) throws BanqueException {
+    protected ClientDTO createClientDTO(Client client) {
+        ClientDTO clientDTO = new ClientDTO(client.getName(), client.getLastName(), client.getPassword(), PersonManager.getGenderDTO(client.getGender()), client.getDateOfBirth(), client.getAddress(), client.getEmail());
+        clientDTO.setId(client.getId());
+        //clientDTO. ACCOUNTSSSS
+        return clientDTO;
+    }
+
+    /**
+     * Validates a client before trying to store it or update it on the database
+     * @param client the client to be analyzed
+     * @return true if its possible to save the client or an exception otherwise
+     * @throws BanqueException
+     */
+    protected boolean validateClient(Client client) throws BanqueException {
         //Fields cannot be null
         if (client.getName() == null || client.getName().isEmpty()) {
             throw new BanqueException(BanqueException.ErrorType.CLIENT_NULL_NAME);
