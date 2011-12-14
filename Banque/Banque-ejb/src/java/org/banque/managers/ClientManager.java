@@ -54,13 +54,10 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
 
     @Override
     public ClientDTO updateClient(ClientDTO client) throws BanqueException {
-        if (client == null) {
-            throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
-        }
         Client clientDB = findClientDB(client.getId());
 
+
         try {
-            //clientDB.setAccounts(client.getAccounts());
             clientDB.setAddress(client.getAddress());
             clientDB.setDateOfBirth(client.getDateOfBirth());
             clientDB.setGender(PersonManager.getGenderEntity(client.getGender()));
@@ -156,10 +153,9 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
         return updateClient(client);
     }
 
-    protected ClientDTO createClientDTO(Client client) {
+    protected static ClientDTO createClientDTO(Client client) {
         ClientDTO clientDTO = new ClientDTO(client.getName(), client.getLastName(), client.getPassword(), PersonManager.getGenderDTO(client.getGender()), client.getDateOfBirth(), client.getAddress(), client.getEmail());
         clientDTO.setId(client.getId());
-        //clientDTO. ACCOUNTSSSS
         return clientDTO;
     }
 
