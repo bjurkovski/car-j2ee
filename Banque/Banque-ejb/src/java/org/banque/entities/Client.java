@@ -1,7 +1,6 @@
 package org.banque.entities;
 
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -16,7 +15,7 @@ import javax.persistence.Temporal;
  */
 @Entity
 @NamedQueries({
-    @NamedQuery(name = Client.FIND_ALL, query = "SELECT c from Client c"),
+    @NamedQuery(name = Client.FIND_ALL, query = "SELECT c FROM Client c"),
     @NamedQuery(name = Client.FIND_PARTIALLY, query = "SELECT c FROM Client c WHERE c.name LIKE :partial OR c.lastName LIKE :partial"),
     @NamedQuery(name = Client.FIND_BY_SUBSCRIPTION_DATE, query = "SELECT c FROM Client c WHERE c.dateOfSubscription = :subsdate")
 })
@@ -27,14 +26,14 @@ public class Client extends Person {
     public static final String FIND_BY_SUBSCRIPTION_DATE = "findClientsBySubscriptionDate";
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date dateOfSubscription;
-    //@OneToMany(cascade = CascadeType.ALL)
-    //private List<Account> accounts;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Account> accounts;
     private String email;
+    private boolean admin;
 
     public Client(String name, String lastName, String password, Gender gender, Date dateOfBirth, String address, String email) {
         super(name, lastName, password, gender, dateOfBirth, address);
-        dateOfSubscription = new Date();
-//        accounts = new LinkedList<Account>();
+        this.dateOfSubscription = new Date();
         this.email = email;
     }
 
@@ -50,15 +49,24 @@ public class Client extends Person {
         super();
     }
 
-//    public List<Account> getAccounts() {
-//        return accounts;
-//    }
-//
-//    public void setAccounts(List<Account> accounts) {
-//        this.accounts = accounts;
-//    }
+    public List<Account> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(List<Account> accounts) {
+        this.accounts = accounts;
+    }
+
     public Date getDateOfSubscription() {
         return dateOfSubscription;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
     }
 
     @Override

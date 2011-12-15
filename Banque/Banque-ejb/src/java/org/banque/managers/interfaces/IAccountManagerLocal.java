@@ -2,8 +2,9 @@ package org.banque.managers.interfaces;
 
 import java.util.List;
 import javax.ejb.Local;
+import org.banque.dtos.AccountDTO;
+import org.banque.dtos.ClientDTO;
 import org.banque.entities.Account;
-import org.banque.entities.Client;
 import org.banque.entities.Transaction;
 import org.banque.exceptions.BanqueException;
 
@@ -20,7 +21,7 @@ public interface IAccountManagerLocal {
      * @return the newly created account
      * @throws BanqueException CLIENT_NOT_FOUND or DATABASE_ERROR
      **/
-    public Account createAccount(Client owner) throws BanqueException;
+    public AccountDTO createAccount(ClientDTO owner) throws BanqueException;
 
     /**
      * Creates a new account in the database
@@ -30,7 +31,7 @@ public interface IAccountManagerLocal {
      * @return the newly created account
      * @throws BanqueException CLIENT_NOT_FOUND or DATABASE_ERROR
      **/
-    public Account createAccount(Client owner, boolean alertWhenNegative) throws BanqueException;
+    public AccountDTO createAccount(ClientDTO owner, boolean alertWhenNegative) throws BanqueException;
 
     /**
      * Updates a new account with the newly given information
@@ -38,7 +39,7 @@ public interface IAccountManagerLocal {
      * @return the updated account
      * @throws BanqueException CLIENT_NOT_FOUND or DATABASE_ERROR
      */
-    public Account updateAccount(Account account) throws BanqueException;
+    public AccountDTO updateAccount(AccountDTO account) throws BanqueException;
 
     /**
      * Deletes an account from the database from the database
@@ -51,30 +52,38 @@ public interface IAccountManagerLocal {
      * Finds the account with the given id
      * @param id the id of the account to be searched
      * @return the account with the given id or null if it can not be found
-     * @throws BanqueException DATABASE_ERROR
+     * @throws BanqueException ACCOUNT_NOT_FOUND
      */
-    public Account findAccount(Long id) throws BanqueException;
+    public AccountDTO findAccount(Long id) throws BanqueException;
+
+    /**
+     * Finds all the accounts of a client
+     * @param client the client whose accounts will be searched
+     * @return a list of accounts of the client
+     * @throws BanqueException 
+     */
+    public List<AccountDTO> findAccounts(ClientDTO client) throws BanqueException;
 
     /**
      * Finds all the accounts in the system
      * @return a list with all the accounts
      * @throws BanqueException DATABASE_ERROR
      */
-    public List<Account> findAllAccounts() throws BanqueException;
+    public List<AccountDTO> findAllAccounts() throws BanqueException;
 
     /**
      * Finds all the accounts in the system that have a negative balance
      * @return a list with the accounts
      * @throws BanqueException DATABASE_ERROR
      */
-    public List<Account> findNegativeBalanceAccounts() throws BanqueException;
+    public List<AccountDTO> findNegativeBalanceAccounts() throws BanqueException;
 
     /**
      * Finds all the accounts in the system that have a positive (>=0) balance
      * @return a list with the accounts
      * @throws BanqueException DATABASE_ERROR
      */
-    public List<Account> findPositiveBalanceAccounts() throws BanqueException;
+    public List<AccountDTO> findPositiveBalanceAccounts() throws BanqueException;
 
     /**
      * Finds the transaction with the given id

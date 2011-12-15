@@ -1,10 +1,12 @@
 package org.banque.managers;
 
-import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import org.banque.dtos.AccountDTO;
+import org.banque.dtos.ClientDTO;
 import org.banque.entities.Account;
 import org.banque.entities.Client;
 import org.banque.entities.Transaction;
@@ -20,24 +22,26 @@ import org.banque.utils.Email;
 public class AccountManager implements IAccountManagerLocal {
 
     @PersistenceContext(unitName = "BanquePU")
-    private EntityManager em;
+    protected EntityManager em;
 
     @Override
-    public Account createAccount(Client owner) throws BanqueException {
+    public AccountDTO createAccount(ClientDTO owner) throws BanqueException {
         return createAccount(owner, false);
     }
 
     @Override
-    public Account createAccount(Client owner, boolean alertWhenNegative) throws BanqueException {
-        if (owner == null) {
+    public AccountDTO createAccount(ClientDTO owner, boolean alertWhenNegative) throws BanqueException {
+        Client c = em.find(Client.class, owner.getId());
+        if (c == null) {
             throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
         }
-
-        Account account = new Account(owner, alertWhenNegative);
+        Account account = new Account(alertWhenNegative);
+        account.setOwner(c);
         try {
-//            owner.getAccounts().add(account);
             em.persist(account);
-            return account;
+            c.getAccounts().add(account);
+            c = em.merge(c);
+            return createAccountDTO(account);
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
@@ -45,20 +49,13 @@ public class AccountManager implements IAccountManagerLocal {
     }
 
     @Override
-    public Account updateAccount(Account account) throws BanqueException {
-        if (account == null) {
-            throw new BanqueException(BanqueException.ErrorType.ACCOUNT_NOT_FOUND);
-        }
-
-        Account accountDB = findAccount(account.getId());
-        if (accountDB == null) {
-            throw new BanqueException(BanqueException.ErrorType.ACCOUNT_NOT_FOUND);
-        }
+    public AccountDTO updateAccount(AccountDTO account) throws BanqueException {
+        Account accountDB = findAccountDB(account.getId());
         try {
             accountDB.setBalance(account.getBalance());
             accountDB.setAlertWhenNegative(account.isAlertWhenNegative());
-            accountDB.setTransactions(account.getTransactions());
-            return em.merge(accountDB);
+            //accountDB.setTransactions(account.getTransactions());
+            return createAccountDTO(em.merge(accountDB));
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
@@ -67,13 +64,8 @@ public class AccountManager implements IAccountManagerLocal {
 
     @Override
     public void deleteAccount(Long id) throws BanqueException {
-        Account account = findAccount(id);
-        if (account == null) {
-            throw new BanqueException(BanqueException.ErrorType.ACCOUNT_NOT_FOUND);
-        }
+        Account account = findAccountDB(id);
         try {
-            Client owner = account.getOwner();
-//            owner.getAccounts().remove(account);
             em.remove(em.merge(account));
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
@@ -82,7 +74,11 @@ public class AccountManager implements IAccountManagerLocal {
     }
 
     @Override
-    public Account findAccount(Long id) throws BanqueException {
+    public AccountDTO findAccount(Long id) throws BanqueException {
+        return createAccountDTO(findAccountDB(id));
+    }
+
+    protected Account findAccountDB(Long id) throws BanqueException {
         if (id == null) {
             throw new BanqueException(BanqueException.ErrorType.ACCOUNT_NOT_FOUND);
         }
@@ -96,9 +92,16 @@ public class AccountManager implements IAccountManagerLocal {
     }
 
     @Override
-    public List<Account> findAllAccounts() throws BanqueException {
+    public List<AccountDTO> findAllAccounts() throws BanqueException {
+        List<AccountDTO> toReturn = new LinkedList<AccountDTO>();
         try {
-            return em.createNamedQuery(Account.FIND_ALL).getResultList();
+            List<Account> accounts = em.createNamedQuery(Account.FIND_ALL).getResultList();
+            if (accounts != null) {
+                for (Account a : accounts) {
+                    toReturn.add(createAccountDTO(a));
+                }
+            }
+            return toReturn;
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
@@ -106,9 +109,14 @@ public class AccountManager implements IAccountManagerLocal {
     }
 
     @Override
-    public List<Account> findNegativeBalanceAccounts() throws BanqueException {
+    public List<AccountDTO> findNegativeBalanceAccounts() throws BanqueException {
+        List<AccountDTO> toReturn = new LinkedList<AccountDTO>();
         try {
-            return em.createNamedQuery(Account.FIND_NEGATIVE).getResultList();
+            List<Account> accounts = em.createNamedQuery(Account.FIND_NEGATIVE).getResultList();
+            for (Account a : accounts) {
+                toReturn.add(createAccountDTO(a));
+            }
+            return toReturn;
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
@@ -116,73 +124,114 @@ public class AccountManager implements IAccountManagerLocal {
     }
 
     @Override
-    public List<Account> findPositiveBalanceAccounts() throws BanqueException {
+    public List<AccountDTO> findPositiveBalanceAccounts() throws BanqueException {
+        List<AccountDTO> toReturn = new LinkedList<AccountDTO>();
         try {
-            return em.createNamedQuery(Account.FIND_POSITIVE).getResultList();
+            List<Account> accounts = em.createNamedQuery(Account.FIND_POSITIVE).getResultList();
+            for (Account a : accounts) {
+                toReturn.add(createAccountDTO(a));
+            }
+            return toReturn;
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
     }
 
-    @Override
-    public Transaction findTransaction(Long id) throws BanqueException {
-        try {
-            return em.find(Transaction.class, id);
-        } catch (Exception e) {
-            System.out.println("Original Error Message: " + e.getMessage());
-            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+//    @Override
+//    public Transaction findTransaction(Long id) throws BanqueException {
+//        try {
+//            return em.find(Transaction.class, id);
+//        } catch (Exception e) {
+//            System.out.println("Original Error Message: " + e.getMessage());
+//            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+//        }
+//    }
+//
+//    @Override
+//    public Transaction makeTransaction(Account source, Account dest, double amount) throws BanqueException {
+//        Transaction transaction = new Transaction(amount, source, dest, new Date());
+//
+//        //This method can make one of the accounts negative.
+//        if (source == null || dest == null || findAccount(source.getId()) == null || findAccount(dest.getId()) == null) {
+//            throw new BanqueException(BanqueException.ErrorType.ACCOUNT_NOT_FOUND);
+//        }
+//        source.setBalance(source.getBalance() - amount);
+//        dest.setBalance(dest.getBalance() + amount);
+//        source.getTransactions().add(transaction);
+//        dest.getTransactions().add(transaction);
+//
+//        try {
+//            em.persist(transaction);
+//        } catch (Exception e) {
+//            System.out.println("Original Error Message: " + e.getMessage());
+//            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+//        }
+//
+//        updateAccount(dest);
+//        updateAccount(source);
+//        if (source.isNegative() && source.isAlertWhenNegative()) {
+//            alertNegative(source);
+//        }
+//
+//        return transaction;
+//    }
+//
+//    @Override
+//    public void deleteTransaction(Long id) throws BanqueException {
+//        Transaction transaction = findTransaction(id);
+//        if (transaction == null) {
+//            throw new BanqueException(BanqueException.ErrorType.TRANSACTION_NOT_FOUND);
+//        }
+//
+//        //Makes the rollback
+//        double amount = transaction.getAmount();
+//        transaction.getSource().setBalance(transaction.getSource().getBalance() + amount);
+//        transaction.getDestination().setBalance(transaction.getDestination().getBalance() - amount);
+//        transaction.getSource().getTransactions().remove(transaction);
+//        transaction.getDestination().getTransactions().remove(transaction);
+//        try {
+//            em.remove(em.merge(transaction));
+//        } catch (Exception e) {
+//            System.out.println("Original Error Message: " + e.getMessage());
+//            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+//        }
+//    }
+    protected static AccountDTO createAccountDTO(Account account) {
+        ClientDTO owner;
+        if (ClientManager.clientMap.containsKey(account.getOwner().getId())) {
+            owner = ClientManager.clientMap.get(account.getOwner().getId());
+        } else {
+            owner = ClientManager.createClientDTO(account.getOwner());
         }
+        AccountDTO _return = new AccountDTO(owner, account.isAlertWhenNegative());
+        _return.setBalance(account.getBalance());
+        _return.setId(account.getId());
+        return _return;
     }
 
     @Override
-    public Transaction makeTransaction(Account source, Account dest, double amount) throws BanqueException {
-        Transaction transaction = new Transaction(amount, source, dest, new Date());
-
-        //This method can make one of the accounts negative.
-        if (source == null || dest == null || findAccount(source.getId()) == null || findAccount(dest.getId()) == null) {
-            throw new BanqueException(BanqueException.ErrorType.ACCOUNT_NOT_FOUND);
+    public List<AccountDTO> findAccounts(ClientDTO client) throws BanqueException {
+        Client c = em.find(Client.class, client.getId());
+        if (c == null) {
+            throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
         }
-        source.setBalance(source.getBalance() - amount);
-        dest.setBalance(dest.getBalance() + amount);
-        source.getTransactions().add(transaction);
-        dest.getTransactions().add(transaction);
-
-        try {
-            em.persist(transaction);
-        } catch (Exception e) {
-            System.out.println("Original Error Message: " + e.getMessage());
-            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
-        }
-
-        updateAccount(dest);
-        updateAccount(source);
-        if (source.isNegative() && source.isAlertWhenNegative()) {
-            alertNegative(source);
-        }
-
-        return transaction;
+        return createAccountsDTO(c.getAccounts());
     }
 
-    @Override
-    public void deleteTransaction(Long id) throws BanqueException {
-        Transaction transaction = findTransaction(id);
-        if (transaction == null) {
-            throw new BanqueException(BanqueException.ErrorType.TRANSACTION_NOT_FOUND);
-        }
+    /**
+     * Accessibility method to convert various accounts from the same owner
+     * @param accounts Accounts to be converted to DTOs
+     * @param owner the owner of all the accounts
+     * @return a list with all the accounts converted.
+     */
+    protected static List<AccountDTO> createAccountsDTO(List<Account> accounts) {
+        List<AccountDTO> toReturn = new LinkedList<AccountDTO>();
 
-        //Makes the rollback
-        double amount = transaction.getAmount();
-        transaction.getSource().setBalance(transaction.getSource().getBalance() + amount);
-        transaction.getDestination().setBalance(transaction.getDestination().getBalance() - amount);
-        transaction.getSource().getTransactions().remove(transaction);
-        transaction.getDestination().getTransactions().remove(transaction);
-        try {
-            em.remove(em.merge(transaction));
-        } catch (Exception e) {
-            System.out.println("Original Error Message: " + e.getMessage());
-            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        for (Account a : accounts) {
+            toReturn.add(createAccountDTO(a));
         }
+        return toReturn;
     }
 
     /**
@@ -210,5 +259,20 @@ public class AccountManager implements IAccountManagerLocal {
             }
         };
         sendEmail.run();
+    }
+
+    @Override
+    public Transaction findTransaction(Long id) throws BanqueException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Transaction makeTransaction(Account source, Account dest, double amount) throws BanqueException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void deleteTransaction(Long id) throws BanqueException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

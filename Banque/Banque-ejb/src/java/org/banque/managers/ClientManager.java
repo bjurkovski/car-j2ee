@@ -1,8 +1,10 @@
 package org.banque.managers;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ejb.Stateless;
@@ -22,7 +24,8 @@ import org.banque.managers.interfaces.IClientManagerLocal;
 public class ClientManager extends PersonManager implements IClientManagerLocal {
 
     @PersistenceContext(unitName = "BanquePU")
-    private EntityManager em;
+    protected EntityManager em;
+    protected static Map<Long, ClientDTO> clientMap = new HashMap<Long, ClientDTO>();
 
     @Override
     public ClientDTO createClient(ClientDTO client) throws BanqueException {
@@ -46,6 +49,7 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
         Client client = findClientDB(id);
         try {
             em.remove(em.merge(client));
+            clientMap.remove(id);
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
@@ -154,8 +158,9 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
     }
 
     protected static ClientDTO createClientDTO(Client client) {
-        ClientDTO clientDTO = new ClientDTO(client.getName(), client.getLastName(), client.getPassword(), PersonManager.getGenderDTO(client.getGender()), client.getDateOfBirth(), client.getAddress(), client.getEmail());
+        ClientDTO clientDTO = new ClientDTO(client.getName(), client.getLastName(), client.getPassword(), PersonManager.getGenderDTO(client.getGender()), client.getDateOfBirth(), client.getAddress(), client.getEmail(), client.isAdmin());
         clientDTO.setId(client.getId());
+        clientMap.put(clientDTO.getId(), clientDTO);
         return clientDTO;
     }
 
