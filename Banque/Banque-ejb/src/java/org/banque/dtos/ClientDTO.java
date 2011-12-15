@@ -45,4 +45,16 @@ public class ClientDTO extends PersonDTO {
     public void setAdmin(boolean admin) {
         this.admin = admin;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ClientDTO)) {
+            return false;
+        }
+        ClientDTO other = (ClientDTO) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
 }

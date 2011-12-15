@@ -24,7 +24,9 @@ public class BanqueException extends Exception {
         CLIENT_NULL_DATE_OF_BIRTH,
         CLIENT_NULL_EMAIL,
         CLIENT_ID_ALREADY_EXISTS,
-        INVALID_EMAIL
+        INVALID_EMAIL,
+        TRANSACTION_AMOUNT_INVALID,
+        TRANSACTION_ACCOUNTS_EQUAL
     }
     private ErrorType id;
 
@@ -44,6 +46,6 @@ public class BanqueException extends Exception {
 
     @Override
     public String getMessage() {
-        return "Error ID: " + id + "\n Original Error message: " + super.getMessage();
+        return "Error ID: " + id;
     }
 }

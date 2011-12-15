@@ -32,7 +32,7 @@ public class Account implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private double balance;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany
     private List<Transaction> transactions;
     @ManyToOne
     private Client owner;

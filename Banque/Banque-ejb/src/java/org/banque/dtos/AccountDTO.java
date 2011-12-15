@@ -15,7 +15,6 @@ public class AccountDTO implements Serializable {
     private Long id;
     private double balance;
     private ClientDTO owner;
-//    private List<Transaction> transactions;
     private boolean alertWhenNegative;
 
     public AccountDTO() {
@@ -28,7 +27,6 @@ public class AccountDTO implements Serializable {
     public AccountDTO(ClientDTO owner, boolean alertWhenNegative) {
         this.owner = owner;
         this.balance = 0;
-        //transactions = new LinkedList<Transaction>();
         this.alertWhenNegative = alertWhenNegative;
     }
 
@@ -44,13 +42,6 @@ public class AccountDTO implements Serializable {
         this.balance = balance;
     }
 
-//    public List<Transaction> getTransactions() {
-//        return transactions;
-//    }
-//
-//    public void setTransactions(List<Transaction> transactions) {
-//        this.transactions = transactions;
-//    }
     public Long getId() {
         return id;
     }
@@ -69,5 +60,17 @@ public class AccountDTO implements Serializable {
 
     public void setAlertWhenNegative(boolean alertWhenNegative) {
         this.alertWhenNegative = alertWhenNegative;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof AccountDTO)) {
+            return false;
+        }
+        AccountDTO other = (AccountDTO) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
     }
 }
