@@ -21,7 +21,7 @@ public class ClientDTO extends PersonDTO {
 
     public ClientDTO(String name, String lastName, String password, Gender gender, Date dateOfBirth, String address, String email, boolean admin) {
         super(name, lastName, password, gender, dateOfBirth, address);
-        dateOfSubscription = new Date();
+        this.dateOfSubscription = new Date();
         this.email = email;
         this.admin = admin;
     }

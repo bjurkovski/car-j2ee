@@ -32,9 +32,14 @@ public class Client extends Person {
     private boolean admin;
 
     public Client(String name, String lastName, String password, Gender gender, Date dateOfBirth, String address, String email) {
+        this(name, lastName, password, gender, dateOfBirth, address, email, false);
+    }
+
+    public Client(String name, String lastName, String password, Gender gender, Date dateOfBirth, String address, String email, boolean admin) {
         super(name, lastName, password, gender, dateOfBirth, address);
         this.dateOfSubscription = new Date();
         this.email = email;
+        this.admin = admin;
     }
 
     public String getEmail() {

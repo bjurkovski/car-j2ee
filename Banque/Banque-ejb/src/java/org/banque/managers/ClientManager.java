@@ -34,7 +34,12 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
 
     @Override
     public ClientDTO createClient(String name, String lastName, String password, ClientDTO.Gender gender, Date dateOfBirth, String address, String email) throws BanqueException {
-        Client clientDB = new Client(name, lastName, PersonManager.hashPassword(password), PersonManager.getGenderEntity(gender), dateOfBirth, address, email);
+        return createClient(name, lastName, password, gender, dateOfBirth, address, email, false);
+    }
+
+    @Override
+    public ClientDTO createClient(String name, String lastName, String password, ClientDTO.Gender gender, Date dateOfBirth, String address, String email, boolean admin) throws BanqueException {
+        Client clientDB = new Client(name, lastName, PersonManager.hashPassword(password), PersonManager.getGenderEntity(gender), dateOfBirth, address, email, admin);
         try {
             em.persist(clientDB);
             return createClientDTO(clientDB);
@@ -69,6 +74,7 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
             clientDB.setName(client.getName());
             clientDB.setPassword(client.getPassword());
             clientDB.setEmail(client.getEmail());
+            clientDB.setAdmin(client.isAdmin());
             return createClientDTO(em.merge(clientDB));
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
