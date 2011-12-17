@@ -5,12 +5,15 @@
 package org.banque.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import org.banque.dtos.ClientDTO;
+import java.util.List;
 
 /**
  *
  * @author bjurkovski
  */
 public interface BanqueServiceAsync {
-
-    public void myMethod(String s, AsyncCallback<String> callback);
+    public List<ClientDTO> findAllClients();
+    
+    public void createClient(ClientDTO client);
 }

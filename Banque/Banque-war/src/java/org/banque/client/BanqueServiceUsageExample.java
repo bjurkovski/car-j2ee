@@ -53,7 +53,7 @@ public class BanqueServiceUsageExample extends VerticalPanel {
             public void onClick(ClickEvent event) {
                 // Make remote call. Control flow will continue immediately and later
                 // 'callback' will be invoked when the RPC completes.
-                getService().myMethod(txtUserInput.getText(), callback);
+                //getService().myMethod(txtUserInput.getText(), callback);
             }
         });
     }

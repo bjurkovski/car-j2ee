@@ -6,6 +6,8 @@ package org.banque.client;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import java.util.List;
+import org.banque.dtos.ClientDTO;
 
 /**
  *
@@ -14,5 +16,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("banqueservice")
 public interface BanqueService extends RemoteService {
 
-    public String myMethod(String s);
+    public List<ClientDTO> findAllClients();
+    
+    public void createClient(ClientDTO client);
 }
