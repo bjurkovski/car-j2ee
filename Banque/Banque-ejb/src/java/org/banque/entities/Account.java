@@ -8,17 +8,17 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 
 /**
  * @author wasser
  */
 @Entity
 @NamedQueries({
-    @NamedQuery(name = Account.FIND_ALL, query = "SELECT a from Account a"),
+    @NamedQuery(name = Account.FIND_ALL, query = "SELECT a FROM Account a"),
     @NamedQuery(name = Account.FIND_NEGATIVE, query = "SELECT a FROM Account a WHERE a.balance < 0"),
     @NamedQuery(name = Account.FIND_POSITIVE, query = "SELECT a FROM Account a WHERE a.balance >= 0")
 })
@@ -32,21 +32,17 @@ public class Account implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private double balance;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany
     private List<Transaction> transactions;
-    @OneToOne(cascade = CascadeType.REFRESH)
+    @ManyToOne
     private Client owner;
     private boolean alertWhenNegative;
 
     public Account() {
+        this(false);
     }
 
-    public Account(Client owner) {
-        this(owner, false);
-    }
-
-    public Account(Client owner, boolean alertWhenNegative) {
-        this.owner = owner;
+    public Account(boolean alertWhenNegative) {
         this.balance = 0;
         transactions = new LinkedList<Transaction>();
         this.alertWhenNegative = alertWhenNegative;
@@ -54,6 +50,10 @@ public class Account implements Serializable {
 
     public Client getOwner() {
         return owner;
+    }
+
+    public void setOwner(Client owner) {
+        this.owner = owner;
     }
 
     public double getBalance() {

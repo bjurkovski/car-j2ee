@@ -26,12 +26,20 @@ public interface IClientManagerLocal {
     public ClientDTO createClient(ClientDTO client) throws BanqueException;
 
     /**
-     * Creates a new client in the database assigning him an id
+     * Creates a new client in the database assigning him an id that will not be an administrator
      * @param password - in clear text
      * @return the persisted client with a unique id
      * @throws BanqueException DATABASE_ERROR
      */
     public ClientDTO createClient(String name, String lastName, String password, ClientDTO.Gender gender, Date dateOfBirth, String address, String email) throws BanqueException;
+
+    /**
+     * Creates a new client with the option to make him an admin
+     * @param password - in clear text
+     * @return the persisted client with a unique id
+     * @throws BanqueException DATABASE_ERROR     
+     */
+    public ClientDTO createClient(String name, String lastName, String password, ClientDTO.Gender gender, Date dateOfBirth, String address, String email, boolean admin) throws BanqueException;
 
     /**
      * Searches the database for the client and deletes him

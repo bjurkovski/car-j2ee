@@ -1,8 +1,10 @@
 package org.banque.managers;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ejb.Stateless;
@@ -22,7 +24,7 @@ import org.banque.managers.interfaces.IClientManagerLocal;
 public class ClientManager extends PersonManager implements IClientManagerLocal {
 
     @PersistenceContext(unitName = "BanquePU")
-    private EntityManager em;
+    protected EntityManager em;
 
     @Override
     public ClientDTO createClient(ClientDTO client) throws BanqueException {
@@ -31,7 +33,12 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
 
     @Override
     public ClientDTO createClient(String name, String lastName, String password, ClientDTO.Gender gender, Date dateOfBirth, String address, String email) throws BanqueException {
-        Client clientDB = new Client(name, lastName, PersonManager.hashPassword(password), PersonManager.getGenderEntity(gender), dateOfBirth, address, email);
+        return createClient(name, lastName, password, gender, dateOfBirth, address, email, false);
+    }
+
+    @Override
+    public ClientDTO createClient(String name, String lastName, String password, ClientDTO.Gender gender, Date dateOfBirth, String address, String email, boolean admin) throws BanqueException {
+        Client clientDB = new Client(name, lastName, PersonManager.hashPassword(password), PersonManager.getGenderEntity(gender), dateOfBirth, address, email, admin);
         try {
             em.persist(clientDB);
             return createClientDTO(clientDB);
@@ -54,13 +61,10 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
 
     @Override
     public ClientDTO updateClient(ClientDTO client) throws BanqueException {
-        if (client == null) {
-            throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
-        }
         Client clientDB = findClientDB(client.getId());
 
+
         try {
-            //clientDB.setAccounts(client.getAccounts());
             clientDB.setAddress(client.getAddress());
             clientDB.setDateOfBirth(client.getDateOfBirth());
             clientDB.setGender(PersonManager.getGenderEntity(client.getGender()));
@@ -68,6 +72,7 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
             clientDB.setName(client.getName());
             clientDB.setPassword(client.getPassword());
             clientDB.setEmail(client.getEmail());
+            clientDB.setAdmin(client.isAdmin());
             return createClientDTO(em.merge(clientDB));
         } catch (Exception e) {
             System.out.println("Original Error Message: " + e.getMessage());
@@ -156,10 +161,9 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
         return updateClient(client);
     }
 
-    protected ClientDTO createClientDTO(Client client) {
-        ClientDTO clientDTO = new ClientDTO(client.getName(), client.getLastName(), client.getPassword(), PersonManager.getGenderDTO(client.getGender()), client.getDateOfBirth(), client.getAddress(), client.getEmail());
+    protected static ClientDTO createClientDTO(Client client) {
+        ClientDTO clientDTO = new ClientDTO(client.getName(), client.getLastName(), client.getPassword(), PersonManager.getGenderDTO(client.getGender()), client.getDateOfBirth(), client.getAddress(), client.getEmail(), client.isAdmin());
         clientDTO.setId(client.getId());
-        //clientDTO. ACCOUNTSSSS
         return clientDTO;
     }
 

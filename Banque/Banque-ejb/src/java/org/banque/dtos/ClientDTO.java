@@ -9,17 +9,21 @@ import java.util.Date;
 public class ClientDTO extends PersonDTO {
 
     private Date dateOfSubscription;
-    //private List<AccountDTO> accounts;
+    private boolean admin;
     private String email;
 
     public ClientDTO() {
     }
 
     public ClientDTO(String name, String lastName, String password, Gender gender, Date dateOfBirth, String address, String email) {
+        this(name, lastName, password, gender, dateOfBirth, address, email, false);
+    }
+
+    public ClientDTO(String name, String lastName, String password, Gender gender, Date dateOfBirth, String address, String email, boolean admin) {
         super(name, lastName, password, gender, dateOfBirth, address);
-        dateOfSubscription = new Date();
-        //accounts = new LinkedList<AccountDTO>();
+        this.dateOfSubscription = new Date();
         this.email = email;
+        this.admin = admin;
     }
 
     public String getEmail() {
@@ -30,30 +34,20 @@ public class ClientDTO extends PersonDTO {
         this.email = email;
     }
 
-//    public List<AccountDTO> getAccounts() {
-//        return accounts;
-//    }
-//
-//    public void addAccount(AccountDTO account) {
-//        if (accounts == null) {
-//            accounts = new LinkedList<AccountDTO>();
-//        }
-//        accounts.add(account);
-//    }
     public Date getDateOfSubscription() {
         return dateOfSubscription;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
     }
 
     @Override
     public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
         if (!(object instanceof ClientDTO)) {
             return false;
         }
@@ -62,10 +56,5 @@ public class ClientDTO extends PersonDTO {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return "ClientDTO [ id=" + id + " ]";
     }
 }
