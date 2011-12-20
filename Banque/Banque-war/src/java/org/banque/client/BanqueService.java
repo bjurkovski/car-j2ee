@@ -19,4 +19,8 @@ public interface BanqueService extends RemoteService {
     public List<ClientDTO> findAllClients();
     
     public void createClient(ClientDTO client);
+    
+    public void removeClient(Long clientId);
+    
+    public List<ClientDTO> findClients(String searchStr);
 }

@@ -1,0 +1,37 @@
+/* 
+    Document   : style
+    Created on : Nov 26, 2011, 4:00:47 PM
+    Author     : bjurkovski
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+root { 
+    display: block;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+body {
+    width: 960px;
+    margin: 0px auto 0px auto;
+    position: relative;
+    text-align: center;
+    background-color: #ff0000;
+}
+
+.title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    padding-bottom: 10px;
+}

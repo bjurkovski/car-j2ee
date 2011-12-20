@@ -13,7 +13,11 @@ import java.util.List;
  * @author bjurkovski
  */
 public interface BanqueServiceAsync {
-    public List<ClientDTO> findAllClients();
+    public void findAllClients(AsyncCallback<List<ClientDTO>> callback);
     
-    public void createClient(ClientDTO client);
+    public void createClient(ClientDTO client, AsyncCallback<Void> callback);
+    
+    public void removeClient(Long clientId, AsyncCallback<Void> callback);
+    
+    public void findClients(String searchStr, AsyncCallback<List<ClientDTO>> callback);
 }

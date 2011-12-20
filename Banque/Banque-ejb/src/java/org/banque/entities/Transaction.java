@@ -17,7 +17,7 @@ import javax.persistence.Temporal;
  */
 @Entity
 @NamedQueries({
-    @NamedQuery(name = Transaction.FIND_ALL, query = "SELECT t FROM Transaction t"),})
+    @NamedQuery(name = Transaction.FIND_ALL, query = "SELECT t FROM Transaction t")})
 public class Transaction implements Serializable {
 
     public static final String FIND_ALL = "findAllTransactions";

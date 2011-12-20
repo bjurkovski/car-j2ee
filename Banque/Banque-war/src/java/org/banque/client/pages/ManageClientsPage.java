@@ -16,6 +16,7 @@ import com.google.gwt.user.client.ui.Widget;
 import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
 import org.banque.client.pages.clients.AddRemoveClientsPage;
+import org.banque.client.pages.clients.SearchClientsPage;
 
 /**
  *
@@ -26,6 +27,7 @@ public class ManageClientsPage implements WebPage {
     private DockPanel panel = new DockPanel();
     private BanqueServiceAsync b = GWT.create(BanqueService.class);
     private AddRemoveClientsPage addRemovePage = new AddRemoveClientsPage();
+    private SearchClientsPage searchPage = new SearchClientsPage();
     private Widget currentPage = null;
     
     public class MenuAction implements Command {
@@ -45,7 +47,7 @@ public class ManageClientsPage implements WebPage {
                 currentPage = addRemovePage.getWidget();
             }
             else if(option == "Search Clients") {
-                //currentPage = manageAccountsPage.getWidget();
+                currentPage = searchPage.getWidget();
             }
             
            panel.add(currentPage, DockPanel.CENTER);
@@ -58,20 +60,6 @@ public class ManageClientsPage implements WebPage {
         menu.setWidth("960px");
         
         panel.add(menu, DockPanel.NORTH);
-        /*
-        panel.add(new Label("Manage Clients"));
-        
-        b.myMethod("uma chamada de teste", new AsyncCallback<String>() {
-            public void onSuccess(String result) {
-                panel.add(new Label(result));
-            }
-            
-            public void onFailure(Throwable caught) {
-                panel.add(new Label("deu caca"));
-            }
-        });
-         *
-         */
     }
     
     public Widget getWidget() {
