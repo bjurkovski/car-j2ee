@@ -47,7 +47,11 @@ public class Account implements Serializable {
     }
 
     public Account(boolean alertWhenNegative) {
-        this.balance = 0;
+        this(0, alertWhenNegative);
+    }
+
+    public Account(double balance, boolean alertWhenNegative) {
+        this.balance = balance;
         transactions = new LinkedList<Transaction>();
         this.alertWhenNegative = alertWhenNegative;
     }

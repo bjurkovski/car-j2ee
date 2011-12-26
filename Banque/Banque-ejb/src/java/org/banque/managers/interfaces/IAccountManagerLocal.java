@@ -13,6 +13,7 @@ import org.banque.exceptions.BanqueException;
  */
 @Local
 public interface IAccountManagerLocal {
+
     public final static int ID = 0;
     public final static int NOM_CLIENT = 1;
     public final static int PRENOM_CLIENT = 2;
@@ -37,6 +38,17 @@ public interface IAccountManagerLocal {
      * @throws BanqueException CLIENT_NOT_FOUND or DATABASE_ERROR
      **/
     public AccountDTO createAccount(ClientDTO owner, boolean alertWhenNegative) throws BanqueException;
+
+    /**
+     * Creates a new account in the database
+     * @param owner The client that owns an account
+     * @param balance initial balance of the account
+     * @param alertWhenNegative Alert the client via email (if supplied) when the
+     * account is negative
+     * @return the newly created account
+     * @throws BanqueException CLIENT_NOT_FOUND or DATABASE_ERROR
+     **/
+    public AccountDTO createAccount(ClientDTO owner, double balance, boolean alertWhenNegative) throws BanqueException;
 
     /**
      * Updates a new account with the newly given information
@@ -75,9 +87,9 @@ public interface IAccountManagerLocal {
      * @throws BanqueException DATABASE_ERROR
      */
     public List<AccountDTO> findAllAccounts() throws BanqueException;
-    
+
     public List<AccountDTO> findAccountsByCriteria(String searchString, int criteria) throws BanqueException;
-    
+
     /**
      * Finds all the accounts in the system that have a negative balance
      * @return a list with the accounts
@@ -91,9 +103,9 @@ public interface IAccountManagerLocal {
      * @throws BanqueException DATABASE_ERROR
      */
     public List<AccountDTO> findPositiveBalanceAccounts() throws BanqueException;
-    
+
     public List<AccountDTO> findAccountsByOwnerName(String name) throws BanqueException;
-    
+
     public List<AccountDTO> findAccountsByOwnerLastName(String lastName) throws BanqueException;
 
     /**
@@ -118,11 +130,11 @@ public interface IAccountManagerLocal {
      * @throws BanqueException DATABASE_ERROR
      */
     public List<TransactionDTO> findAllTransactions() throws BanqueException;
-    
+
     public List<TransactionDTO> findTransactionsByCriteria(String searchStr, int criteria) throws BanqueException;
-    
+
     public List<TransactionDTO> findTransactionsByOwnerName(String name) throws BanqueException;
-    
+
     public List<TransactionDTO> findTransactionsByOwnerLastName(String lastName) throws BanqueException;
 
     /**
@@ -150,7 +162,7 @@ public interface IAccountManagerLocal {
     public TransactionDTO makeTransaction(TransactionDTO t) throws BanqueException;
 
     public TransactionDTO makeTransaction(Long sourceId, Long dstId, double amount) throws BanqueException;
-    
+
     /**
      * Deletes a transaction, returning the money to the owner and debiting it from
      * the destination.

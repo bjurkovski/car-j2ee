@@ -32,11 +32,16 @@ public class AccountManager implements IAccountManagerLocal {
 
     @Override
     public AccountDTO createAccount(ClientDTO owner, boolean alertWhenNegative) throws BanqueException {
+        return createAccount(owner, 0, alertWhenNegative);
+    }
+
+    @Override
+    public AccountDTO createAccount(ClientDTO owner, double balance, boolean alertWhenNegative) throws BanqueException {
         Client c = em.find(Client.class, owner.getId());
         if (c == null) {
             throw new BanqueException(BanqueException.ErrorType.CLIENT_NOT_FOUND);
         }
-        Account account = new Account(alertWhenNegative);
+        Account account = new Account(balance, alertWhenNegative);
         account.setOwner(c);
         try {
             em.persist(account);
@@ -105,25 +110,25 @@ public class AccountManager implements IAccountManagerLocal {
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
     }
-    
+
     @Override
     public List<AccountDTO> findAccountsByCriteria(String searchString, int criteria) throws BanqueException {
-        switch(criteria) {
-                case IAccountManagerLocal.BALANCE_NEGATIVE:
-                    return findNegativeBalanceAccounts();
-                case IAccountManagerLocal.BALANCE_POSITIVE:
-                    return findPositiveBalanceAccounts();
-                case IAccountManagerLocal.NOM_CLIENT:
-                    return findAccountsByOwnerLastName(searchString);
-                case IAccountManagerLocal.PRENOM_CLIENT:
-                    return findAccountsByOwnerName(searchString);
-                case IAccountManagerLocal.ID:
-                    List<AccountDTO> _return = new LinkedList<AccountDTO>();
-                    _return.add(findAccount(Long.valueOf(searchString)));
-                    return _return;
-            }
-        
-            throw new BanqueException(BanqueException.ErrorType.INVALID_SEARCH_CRITERIA);
+        switch (criteria) {
+            case IAccountManagerLocal.BALANCE_NEGATIVE:
+                return findNegativeBalanceAccounts();
+            case IAccountManagerLocal.BALANCE_POSITIVE:
+                return findPositiveBalanceAccounts();
+            case IAccountManagerLocal.NOM_CLIENT:
+                return findAccountsByOwnerLastName(searchString);
+            case IAccountManagerLocal.PRENOM_CLIENT:
+                return findAccountsByOwnerName(searchString);
+            case IAccountManagerLocal.ID:
+                List<AccountDTO> _return = new LinkedList<AccountDTO>();
+                _return.add(findAccount(Long.valueOf(searchString)));
+                return _return;
+        }
+
+        throw new BanqueException(BanqueException.ErrorType.INVALID_SEARCH_CRITERIA);
     }
 
     @Override
@@ -155,7 +160,7 @@ public class AccountManager implements IAccountManagerLocal {
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
     }
-    
+
     @Override
     public List<AccountDTO> findAccountsByOwnerName(String name) throws BanqueException {
         List<AccountDTO> toReturn = new LinkedList<AccountDTO>();
@@ -170,7 +175,7 @@ public class AccountManager implements IAccountManagerLocal {
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
     }
-    
+
     @Override
     public List<AccountDTO> findAccountsByOwnerLastName(String lastName) throws BanqueException {
         List<AccountDTO> toReturn = new LinkedList<AccountDTO>();
@@ -229,10 +234,10 @@ public class AccountManager implements IAccountManagerLocal {
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
     }
-    
+
     @Override
     public List<TransactionDTO> findTransactionsByCriteria(String searchStr, int criteria) throws BanqueException {
-        switch(criteria) {
+        switch (criteria) {
             case IAccountManagerLocal.ID:
                 LinkedList<TransactionDTO> _return = new LinkedList<TransactionDTO>();
                 _return.add(findTransaction(Long.valueOf(searchStr)));
@@ -242,10 +247,10 @@ public class AccountManager implements IAccountManagerLocal {
             case IAccountManagerLocal.PRENOM_CLIENT:
                 return findTransactionsByOwnerName(searchStr);
         }
-        
+
         throw new BanqueException(BanqueException.ErrorType.INVALID_SEARCH_CRITERIA);
     }
-    
+
     @Override
     public List<TransactionDTO> findTransactionsByOwnerName(String name) throws BanqueException {
         List<TransactionDTO> toReturn = new LinkedList<TransactionDTO>();
@@ -260,7 +265,7 @@ public class AccountManager implements IAccountManagerLocal {
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
     }
-    
+
     @Override
     public List<TransactionDTO> findTransactionsByOwnerLastName(String lastName) throws BanqueException {
         List<TransactionDTO> toReturn = new LinkedList<TransactionDTO>();
@@ -280,7 +285,7 @@ public class AccountManager implements IAccountManagerLocal {
     public TransactionDTO makeTransaction(TransactionDTO t) throws BanqueException {
         return makeTransaction(t.getSource(), t.getDestination(), t.getAmount());
     }
-    
+
     @Override
     public TransactionDTO makeTransaction(Long sourceId, Long dstId, double amount) throws BanqueException {
         AccountDTO src = findAccount(sourceId);
