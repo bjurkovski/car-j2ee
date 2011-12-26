@@ -11,6 +11,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -20,6 +21,8 @@ import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
 import org.banque.client.pages.WebPage;
 import org.banque.dtos.ClientDTO;
+import org.banque.managers.ClientManager;
+import org.banque.managers.interfaces.IClientManagerLocal;
 
 /**
  *
@@ -29,6 +32,7 @@ public class SearchClientsPage implements WebPage {
     private VerticalPanel vPanel;
     private Label pageTitle;
     private TextBox searchBox;
+    private ListBox categoriesList;
     private Button searchButton;
     private Button listAllButton;
     private VerticalPanel resultsPanel;
@@ -39,12 +43,19 @@ public class SearchClientsPage implements WebPage {
         pageTitle = new Label("Search Clients");
         pageTitle.setStyleName("title");
         searchBox = new TextBox();
+        categoriesList = new ListBox();
         searchButton = new Button("Search");
         listAllButton = new Button("List All");
         resultsPanel = new VerticalPanel();
         
+        categoriesList.addItem("Name", String.valueOf(IClientManagerLocal.PRENOM));
+        categoriesList.addItem("Last Name", String.valueOf(IClientManagerLocal.NOM));
+        categoriesList.addItem("e-mail", String.valueOf(IClientManagerLocal.EMAIL));
+        categoriesList.addItem("ID", String.valueOf(IClientManagerLocal.ID));
+        
         final HorizontalPanel searchPanel = new HorizontalPanel();
         searchPanel.add(searchBox);
+        searchPanel.add(categoriesList);
         searchPanel.add(searchButton);
         searchPanel.add(listAllButton);
         
@@ -84,13 +95,19 @@ public class SearchClientsPage implements WebPage {
     
     private void search() {
         resultsPanel.clear();
-        resultsPanel.add(new Label("Search Results:"));
-        getService().findAllClients(updateSearchResultsCallback);
+        final Label l = new Label("Search Results:");
+        l.setStyleName("title");
+        resultsPanel.add(l);
+        int selectedCategory = categoriesList.getSelectedIndex();
+        int sc = Integer.valueOf(categoriesList.getValue(selectedCategory));
+        getService().findClientsByCriteria(searchBox.getText(), sc, updateSearchResultsCallback);
     }
     
     private void findAll() {
         resultsPanel.clear();
-        resultsPanel.add(new Label("All Clients:"));
+        final Label l = new Label("All Clients:");
+        l.setStyleName("title");
+        resultsPanel.add(l);
         getService().findAllClients(updateSearchResultsCallback);
     }
     

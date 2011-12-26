@@ -14,20 +14,20 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
-import org.banque.client.pages.accounts.AddRemoveAccountsPage;
 import org.banque.client.pages.accounts.SearchAccountsPage;
-import org.banque.client.pages.clients.AddRemoveClientsPage;
+import org.banque.client.pages.transaction.MakeTransactionPage;
+import org.banque.client.pages.transaction.TransactionsLogPage;
 
 /**
  *
  * @author bjurkovski
  */
-public class ManageAccountsPage implements WebPage {
+public class TransactionsPage implements WebPage {
     private MenuBar menu = new MenuBar();
     private DockPanel panel = new DockPanel();
     private BanqueServiceAsync b = GWT.create(BanqueService.class);
-    private AddRemoveAccountsPage addRemovePage = new AddRemoveAccountsPage();
-    private SearchAccountsPage searchPage = new SearchAccountsPage();
+    private MakeTransactionPage makeTransactionPage = new MakeTransactionPage();
+    private TransactionsLogPage logPage = new TransactionsLogPage();
     private Widget currentPage = null;
     
     public class MenuAction implements Command {
@@ -43,20 +43,20 @@ public class ManageAccountsPage implements WebPage {
                 panel.remove(currentPage);
             }
             
-            if(option == "AddRemove Accounts") {
-                currentPage = addRemovePage.getWidget();
+            if(option == "Make Transaction") {
+                currentPage = makeTransactionPage.getWidget();
             }
-            else if(option == "Search Accounts") {
-                currentPage = searchPage.getWidget();
+            else if(option == "Transaction Log") {
+                currentPage = logPage.getWidget();
             }
             
            panel.add(currentPage, DockPanel.CENTER);
         }
     }
     
-    public ManageAccountsPage() {
-        menu.addItem(new MenuItem("Add Account", new MenuAction("AddRemove Accounts")));
-        menu.addItem(new MenuItem("Search Account", new MenuAction("Search Accounts")));
+    public TransactionsPage() {
+        menu.addItem(new MenuItem("Make Transaction", new MenuAction("Make Transaction")));
+        menu.addItem(new MenuItem("View Log", new MenuAction("Transaction Log")));
         menu.setWidth("960px");
         
         panel.add(menu, DockPanel.NORTH);

@@ -57,4 +57,9 @@ public class ClientDTO extends PersonDTO {
         }
         return true;
     }
+    
+    @Override
+    public String toString() {
+        return name + " " + lastName;
+    }
 }

@@ -63,6 +63,9 @@ public class ManageClientsPage implements WebPage {
     }
     
     public Widget getWidget() {
+        // Refresh the page
+        if(currentPage != null)
+            currentPage = currentPage.asWidget();
         return panel;
     }
 }

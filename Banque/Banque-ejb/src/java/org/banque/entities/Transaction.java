@@ -17,10 +17,17 @@ import javax.persistence.Temporal;
  */
 @Entity
 @NamedQueries({
-    @NamedQuery(name = Transaction.FIND_ALL, query = "SELECT t FROM Transaction t")})
+    @NamedQuery(name = Transaction.FIND_ALL, query = "SELECT t FROM Transaction t"),
+    @NamedQuery(name = Transaction.FIND_BY_CLIENT_NAME, query = "SELECT t FROM Transaction t "
+        + "WHERE t.source.owner.name LIKE :name OR t.destination.owner.name LIKE :name"),
+    @NamedQuery(name = Transaction.FIND_BY_CLIENT_LAST_NAME, query = "SELECT t FROM Transaction t "
+        + "WHERE t.source.owner.lastName LIKE :lastName OR t.destination.owner.lastName LIKE :lastName")
+})
 public class Transaction implements Serializable {
 
     public static final String FIND_ALL = "findAllTransactions";
+    public static final String FIND_BY_CLIENT_NAME = "findTransactionsByClientName";
+    public static final String FIND_BY_CLIENT_LAST_NAME = "findTransactionsByClientLastName";
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

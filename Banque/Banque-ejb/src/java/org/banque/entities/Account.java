@@ -19,12 +19,16 @@ import javax.persistence.OneToMany;
 @Entity
 @NamedQueries({
     @NamedQuery(name = Account.FIND_ALL, query = "SELECT a FROM Account a"),
+    @NamedQuery(name = Account.FIND_BY_NAME, query = "SELECT a FROM Account a WHERE a.owner.name LIKE :name"),
+    @NamedQuery(name = Account.FIND_BY_LAST_NAME, query = "SELECT a FROM Account a WHERE a.owner.lastName LIKE :lastName"),
     @NamedQuery(name = Account.FIND_NEGATIVE, query = "SELECT a FROM Account a WHERE a.balance < 0"),
     @NamedQuery(name = Account.FIND_POSITIVE, query = "SELECT a FROM Account a WHERE a.balance >= 0")
 })
 public class Account implements Serializable {
 
     public static final String FIND_ALL = "findAllAccounts";
+    public static final String FIND_BY_LAST_NAME = "findAccountsByOwnerLastName";
+    public static final String FIND_BY_NAME = "findAccountsByOwnerName";
     public static final String FIND_NEGATIVE = "findAllNegativeAccounts";
     public static final String FIND_POSITIVE = "findAllPositiveAccounts";
     private static final long serialVersionUID = 1L;

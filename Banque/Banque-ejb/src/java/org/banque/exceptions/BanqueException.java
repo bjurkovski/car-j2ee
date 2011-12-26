@@ -1,17 +1,18 @@
 package org.banque.exceptions;
 
+import java.io.Serializable;
+
 /**
  * Class with a unique identifier so that the front end can show a localized 
  * message accordingly
  * @author wasser
  */
-public class BanqueException extends Exception {
+public class BanqueException extends Exception implements Serializable {
 
     /**
      * Possible Errors reported by the Exception
      */
     public static enum ErrorType {
-
         DATABASE_ERROR,
         ERROR_HASHING_PASSWORD,
         CLIENT_NOT_FOUND,
@@ -25,10 +26,17 @@ public class BanqueException extends Exception {
         CLIENT_NULL_EMAIL,
         CLIENT_ID_ALREADY_EXISTS,
         INVALID_EMAIL,
+        INVALID_SEARCH_CRITERIA,
         TRANSACTION_AMOUNT_INVALID,
-        TRANSACTION_ACCOUNTS_EQUAL
+        TRANSACTION_ACCOUNTS_EQUAL,
+        UNKNOWN_ERROR
     }
     private ErrorType id;
+    
+    public BanqueException() {
+        super();
+        this.id = ErrorType.UNKNOWN_ERROR;
+    }
 
     /**
      * Constructs an instance of <code>BanqueException</code> with the specified id

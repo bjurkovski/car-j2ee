@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.banque.client.pages.accounts;
+package org.banque.client.pages.transaction;
 
+import org.banque.client.pages.clients.*;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -20,16 +21,17 @@ import java.util.List;
 import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
 import org.banque.client.pages.WebPage;
-import org.banque.dtos.AccountDTO;
 import org.banque.dtos.ClientDTO;
+import org.banque.dtos.TransactionDTO;
+import org.banque.managers.ClientManager;
 import org.banque.managers.interfaces.IAccountManagerLocal;
-
+import org.banque.managers.interfaces.IClientManagerLocal;
 
 /**
  *
  * @author bjurkovski
  */
-public class SearchAccountsPage implements WebPage {
+public class TransactionsLogPage implements WebPage {
     private VerticalPanel vPanel;
     private Label pageTitle;
     private TextBox searchBox;
@@ -37,22 +39,20 @@ public class SearchAccountsPage implements WebPage {
     private Button searchButton;
     private Button listAllButton;
     private VerticalPanel resultsPanel;
-    private AsyncCallback<List<AccountDTO>> updateSearchResultsCallback;
+    private AsyncCallback<List<TransactionDTO>> updateTransactionsCallback;
     
-    public SearchAccountsPage() {
+    public TransactionsLogPage() {
         vPanel = new VerticalPanel();
-        pageTitle = new Label("Search Accounts");
+        pageTitle = new Label("Transactions Log");
         pageTitle.setStyleName("title");
         searchBox = new TextBox();
         categoriesList = new ListBox();
-        searchButton = new Button("Search");
+        searchButton = new Button("Filter");
         listAllButton = new Button("List All");
         resultsPanel = new VerticalPanel();
         
-        categoriesList.addItem("Negative Balance", String.valueOf(IAccountManagerLocal.BALANCE_NEGATIVE));
-        categoriesList.addItem("Positive Balance", String.valueOf(IAccountManagerLocal.BALANCE_POSITIVE));
-        categoriesList.addItem("Client Name", String.valueOf(IAccountManagerLocal.PRENOM_CLIENT));
-        categoriesList.addItem("Client Last Name", String.valueOf(IAccountManagerLocal.NOM_CLIENT));
+        categoriesList.addItem("Name", String.valueOf(IAccountManagerLocal.PRENOM_CLIENT));
+        categoriesList.addItem("Last Name", String.valueOf(IAccountManagerLocal.NOM_CLIENT));
         categoriesList.addItem("ID", String.valueOf(IAccountManagerLocal.ID));
         
         final HorizontalPanel searchPanel = new HorizontalPanel();
@@ -79,20 +79,16 @@ public class SearchAccountsPage implements WebPage {
             }
         });
         
-        updateSearchResultsCallback = new AsyncCallback<List<AccountDTO>>() {
+        updateTransactionsCallback = new AsyncCallback<List<TransactionDTO>>() {
             @Override
             public void onFailure(Throwable caught) {
                 resultsPanel.add(new Label("A problem ocurred."));
             }
 
             @Override
-            public void onSuccess(List<AccountDTO> result) {
-                for(Iterator<AccountDTO> i = result.iterator(); i.hasNext(); ) {
-                    AccountDTO a = i.next();
-                    ClientDTO c = a.getOwner();
-                    String fullName = c.getName() + " " + c.getLastName();
-                    String aId = String.valueOf(a.getId());
-                    resultsPanel.add(new Label(aId + " (" + fullName + ") - Balance: " + a.getBalance()));
+            public void onSuccess(List<TransactionDTO> result) {
+                for(TransactionDTO t : result) {
+                    resultsPanel.add(new Label("From " + t.getSource() + " to " + t.getDestination()));
                 }
             }
         };
@@ -100,28 +96,29 @@ public class SearchAccountsPage implements WebPage {
     
     private void search() {
         resultsPanel.clear();
-        final Label l = new Label("Search Results:");
+        final Label l = new Label("Transactions:");
         l.setStyleName("title");
         resultsPanel.add(l);
         int selectedCategory = categoriesList.getSelectedIndex();
         int sc = Integer.valueOf(categoriesList.getValue(selectedCategory));
-        getService().findAccountsByCriteria(searchBox.getText(), sc, updateSearchResultsCallback);
+        getService().findTransactionsByCriteria(searchBox.getText(), sc, updateTransactionsCallback);
     }
     
     private void findAll() {
         resultsPanel.clear();
-        final Label l = new Label("All Accounts:");
+        final Label l = new Label("All Transactions:");
         l.setStyleName("title");
         resultsPanel.add(l);
-        getService().findAllAccounts(updateSearchResultsCallback);
+        getService().findAllTransactions(updateTransactionsCallback);
     }
     
     public static BanqueServiceAsync getService() {
         return GWT.create(BanqueService.class);
     }
-
+    
     @Override
     public Widget getWidget() {
+        findAll();
         return vPanel;
     }
     

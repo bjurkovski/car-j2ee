@@ -73,4 +73,9 @@ public class AccountDTO implements Serializable {
         }
         return true;
     }
+    
+    @Override
+    public String toString() {
+        return id + " (" + owner.toString() + ")";
+    }
 }

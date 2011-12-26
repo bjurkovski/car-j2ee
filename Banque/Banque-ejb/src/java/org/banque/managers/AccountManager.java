@@ -105,6 +105,26 @@ public class AccountManager implements IAccountManagerLocal {
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
     }
+    
+    @Override
+    public List<AccountDTO> findAccountsByCriteria(String searchString, int criteria) throws BanqueException {
+        switch(criteria) {
+                case IAccountManagerLocal.BALANCE_NEGATIVE:
+                    return findNegativeBalanceAccounts();
+                case IAccountManagerLocal.BALANCE_POSITIVE:
+                    return findPositiveBalanceAccounts();
+                case IAccountManagerLocal.NOM_CLIENT:
+                    return findAccountsByOwnerLastName(searchString);
+                case IAccountManagerLocal.PRENOM_CLIENT:
+                    return findAccountsByOwnerName(searchString);
+                case IAccountManagerLocal.ID:
+                    List<AccountDTO> _return = new LinkedList<AccountDTO>();
+                    _return.add(findAccount(Long.valueOf(searchString)));
+                    return _return;
+            }
+        
+            throw new BanqueException(BanqueException.ErrorType.INVALID_SEARCH_CRITERIA);
+    }
 
     @Override
     public List<AccountDTO> findNegativeBalanceAccounts() throws BanqueException {
@@ -126,6 +146,36 @@ public class AccountManager implements IAccountManagerLocal {
         List<AccountDTO> toReturn = new LinkedList<AccountDTO>();
         try {
             List<Account> accounts = em.createNamedQuery(Account.FIND_POSITIVE).getResultList();
+            for (Account a : accounts) {
+                toReturn.add(createAccountDTO(a));
+            }
+            return toReturn;
+        } catch (Exception e) {
+            System.out.println("Original Error Message: " + e.getMessage());
+            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        }
+    }
+    
+    @Override
+    public List<AccountDTO> findAccountsByOwnerName(String name) throws BanqueException {
+        List<AccountDTO> toReturn = new LinkedList<AccountDTO>();
+        try {
+            List<Account> accounts = em.createNamedQuery(Account.FIND_BY_NAME).setParameter("name", "%" + name + "%").getResultList();
+            for (Account a : accounts) {
+                toReturn.add(createAccountDTO(a));
+            }
+            return toReturn;
+        } catch (Exception e) {
+            System.out.println("Original Error Message: " + e.getMessage());
+            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        }
+    }
+    
+    @Override
+    public List<AccountDTO> findAccountsByOwnerLastName(String lastName) throws BanqueException {
+        List<AccountDTO> toReturn = new LinkedList<AccountDTO>();
+        try {
+            List<Account> accounts = em.createNamedQuery(Account.FIND_BY_LAST_NAME).setParameter("lastName", "%" + lastName + "%").getResultList();
             for (Account a : accounts) {
                 toReturn.add(createAccountDTO(a));
             }
@@ -179,10 +229,63 @@ public class AccountManager implements IAccountManagerLocal {
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
     }
+    
+    @Override
+    public List<TransactionDTO> findTransactionsByCriteria(String searchStr, int criteria) throws BanqueException {
+        switch(criteria) {
+            case IAccountManagerLocal.ID:
+                LinkedList<TransactionDTO> _return = new LinkedList<TransactionDTO>();
+                _return.add(findTransaction(Long.valueOf(searchStr)));
+                return _return;
+            case IAccountManagerLocal.NOM_CLIENT:
+                return findTransactionsByOwnerLastName(searchStr);
+            case IAccountManagerLocal.PRENOM_CLIENT:
+                return findTransactionsByOwnerName(searchStr);
+        }
+        
+        throw new BanqueException(BanqueException.ErrorType.INVALID_SEARCH_CRITERIA);
+    }
+    
+    @Override
+    public List<TransactionDTO> findTransactionsByOwnerName(String name) throws BanqueException {
+        List<TransactionDTO> toReturn = new LinkedList<TransactionDTO>();
+        try {
+            List<Transaction> transactions = em.createNamedQuery(Transaction.FIND_BY_CLIENT_NAME).setParameter("name", "%" + name + "%").getResultList();
+            for (Transaction t : transactions) {
+                toReturn.add(createTransactionDTO(t));
+            }
+            return toReturn;
+        } catch (Exception e) {
+            System.out.println("Original Error Message: " + e.getMessage());
+            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        }
+    }
+    
+    @Override
+    public List<TransactionDTO> findTransactionsByOwnerLastName(String lastName) throws BanqueException {
+        List<TransactionDTO> toReturn = new LinkedList<TransactionDTO>();
+        try {
+            List<Transaction> transactions = em.createNamedQuery(Transaction.FIND_BY_CLIENT_LAST_NAME).setParameter("lastName", "%" + lastName + "%").getResultList();
+            for (Transaction t : transactions) {
+                toReturn.add(createTransactionDTO(t));
+            }
+            return toReturn;
+        } catch (Exception e) {
+            System.out.println("Original Error Message: " + e.getMessage());
+            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        }
+    }
 
     @Override
     public TransactionDTO makeTransaction(TransactionDTO t) throws BanqueException {
         return makeTransaction(t.getSource(), t.getDestination(), t.getAmount());
+    }
+    
+    @Override
+    public TransactionDTO makeTransaction(Long sourceId, Long dstId, double amount) throws BanqueException {
+        AccountDTO src = findAccount(sourceId);
+        AccountDTO dst = findAccount(dstId);
+        return makeTransaction(src, dst, amount);
     }
 
     @Override

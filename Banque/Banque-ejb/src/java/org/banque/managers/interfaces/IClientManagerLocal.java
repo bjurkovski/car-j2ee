@@ -16,6 +16,10 @@ import org.banque.exceptions.BanqueException;
  */
 @Local
 public interface IClientManagerLocal {
+    public final static int ID = 0;
+    public final static int NOM = 1;
+    public final static int PRENOM = 2;
+    public final static int EMAIL = 3;
 
     /**
      * Creates a new client in the database assigning him an id
@@ -73,6 +77,11 @@ public interface IClientManagerLocal {
      */
     public List<ClientDTO> findAllClients() throws BanqueException;
 
+    /*
+     * Gets a list of all clients with the searchString matching the given criteria
+     */
+    public List<ClientDTO> findClientsByCriteria(String searchString, int criteria) throws BanqueException;
+    
     /**
      * Gets a list of all the clients with the partial name/last name
      * @param searchString a part of the client's name or last name
@@ -80,6 +89,12 @@ public interface IClientManagerLocal {
      * @throws BanqueException DATABASE_ERROR
      */
     public List<ClientDTO> findClients(String searchString) throws BanqueException;
+    
+    public List<ClientDTO> findClientsByName(String searchString) throws BanqueException;
+    
+    public List<ClientDTO> findClientsByLastName(String searchString) throws BanqueException;
+    
+    public List<ClientDTO> findClientsByEmail(String searchString) throws BanqueException;
 
     /**
      * Gets a list of all the clients that opened an account on the <date>

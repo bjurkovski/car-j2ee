@@ -1,5 +1,6 @@
 package org.banque.managers;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -39,6 +40,7 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
     @Override
     public ClientDTO createClient(String name, String lastName, String password, ClientDTO.Gender gender, Date dateOfBirth, String address, String email, boolean admin) throws BanqueException {
         Client clientDB = new Client(name, lastName, PersonManager.hashPassword(password), PersonManager.getGenderEntity(gender), dateOfBirth, address, email, admin);
+        validateClient(clientDB);
         try {
             em.persist(clientDB);
             return createClientDTO(clientDB);
@@ -112,12 +114,78 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
     }
+    
+    @Override
+    public List<ClientDTO> findClientsByCriteria(String searchString, int criteria) throws BanqueException {
+        switch(criteria) {
+            case ID:
+                List<ClientDTO> _return = new LinkedList<ClientDTO>();
+                _return.add(findClient(Long.decode(searchString)));
+                return _return;
+            case PRENOM:
+                return findClientsByName(searchString);
+            case NOM:
+                return findClientsByLastName(searchString);
+            case EMAIL:
+                return findClientsByEmail(searchString);
+        }
+        
+        throw new BanqueException(BanqueException.ErrorType.INVALID_SEARCH_CRITERIA);
+    }
 
     @Override
     public List<ClientDTO> findClients(String searchString) throws BanqueException {
         List<ClientDTO> _return = new LinkedList<ClientDTO>();
         try {
             Query query = em.createNamedQuery(Client.FIND_PARTIALLY).setParameter("partial", "%" + searchString + "%");
+            List<Client> results = query.getResultList();
+            for (Client c : results) {
+                _return.add(createClientDTO(c));
+            }
+            return _return;
+        } catch (Exception e) {
+            System.out.println("Original Error Message: " + e.getMessage());
+            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        }
+    }
+    
+    @Override
+    public List<ClientDTO> findClientsByName(String searchString) throws BanqueException {
+        List<ClientDTO> _return = new LinkedList<ClientDTO>();
+        try {
+            Query query = em.createNamedQuery(Client.FIND_BY_NAME).setParameter("name", "%" + searchString + "%");
+            List<Client> results = query.getResultList();
+            for (Client c : results) {
+                _return.add(createClientDTO(c));
+            }
+            return _return;
+        } catch (Exception e) {
+            System.out.println("Original Error Message: " + e.getMessage());
+            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        }
+    }
+    
+    @Override
+    public List<ClientDTO> findClientsByLastName(String searchString) throws BanqueException {
+        List<ClientDTO> _return = new LinkedList<ClientDTO>();
+        try {
+            Query query = em.createNamedQuery(Client.FIND_BY_LAST_NAME).setParameter("lastName", "%" + searchString + "%");
+            List<Client> results = query.getResultList();
+            for (Client c : results) {
+                _return.add(createClientDTO(c));
+            }
+            return _return;
+        } catch (Exception e) {
+            System.out.println("Original Error Message: " + e.getMessage());
+            throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
+        }
+    }
+    
+    @Override
+    public List<ClientDTO> findClientsByEmail(String searchString) throws BanqueException {
+        List<ClientDTO> _return = new LinkedList<ClientDTO>();
+        try {
+            Query query = em.createNamedQuery(Client.FIND_BY_EMAIL).setParameter("email", "%" + searchString + "%");
             List<Client> results = query.getResultList();
             for (Client c : results) {
                 _return.add(createClientDTO(c));

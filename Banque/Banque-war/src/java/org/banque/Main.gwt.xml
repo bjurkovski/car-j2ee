@@ -15,6 +15,7 @@
 
     <!-- Imports the EJB Project -->
     <inherits name='org.banque.dtos'/>
+    <inherits name='org.banque.exceptions'/>
 
     <entry-point class="org.banque.client.MainEntryPoint"/>
     

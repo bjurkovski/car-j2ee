@@ -7,6 +7,7 @@ package org.banque.client.pages.clients;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.cellview.client.CellList;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -20,7 +21,11 @@ import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.datepicker.client.DateBox;
 import com.google.gwt.user.datepicker.client.DatePicker;
+import com.sun.imageio.plugins.common.I18N;
+import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +49,8 @@ public class AddRemoveClientsPage implements WebPage {
     private Label pageTitle;
     private Label addTitle;
     private Label removeTitle;
-    private Grid form;
+    private Grid addClientsGrid;
+    private Grid removeClientsGrid;
     private TextBox firstNameBox;
     private TextBox lastNameBox;
     private RadioButton genderMRadio;
@@ -64,7 +70,8 @@ public class AddRemoveClientsPage implements WebPage {
         pageTitle = new Label("Manage Clients");
         addTitle = new Label("Add Client");
         removeTitle = new Label("Remove Clients");
-        form = new Grid(10, 4);
+        addClientsGrid = new Grid(10, 2);
+        removeClientsGrid = new Grid(3, 2);
         firstNameBox = new TextBox();
         lastNameBox = new TextBox();
         genderMRadio = new RadioButton("gender", "M");
@@ -86,21 +93,39 @@ public class AddRemoveClientsPage implements WebPage {
         
         final AsyncCallback<Void> updateClientsCallback = new AsyncCallback<Void>() {
             public void onSuccess(Void result) {
+                clearForm();
                 updateClientsList();
             }
             
             public void onFailure(Throwable caught) {
+                popupWidget = new PopupWidget("Invalid data!", false);
+                popupWidget.show();
+                popupWidget.addOKHandler(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        popupWidget.hide();
+                    }
+                });
             }
         };
         
         addClientButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
+                ClientDTO.Gender gender = ClientDTO.Gender.FEMALE;
+                if(genderMRadio.getValue() == true) {
+                    gender = ClientDTO.Gender.MALE;
+                }
+                
+                String dateStr = dateOfBirthBox.getValue();
+                DateTimeFormat dd = DateTimeFormat.getFormat("dd/MM/yyyy");
+                Date dateOfBirth = dd.parse(dateStr);
+                
                 ClientDTO client = new ClientDTO(firstNameBox.getValue(),
                                                 lastNameBox.getValue(),
                                                 passwordBox.getValue(),
-                                                Gender.MALE,
-                                                new Date(),
+                                                gender,
+                                                dateOfBirth,
                                                 addressBox.getValue(),
                                                 emailBox.getValue());
                 if(validateForm()) {
@@ -123,48 +148,52 @@ public class AddRemoveClientsPage implements WebPage {
         });
         
         vPanel.add(pageTitle);
-        form.setWidget(0, 0, addTitle);
-        form.setWidget(1, 0, new Label("First Name: "));
-        form.setWidget(1, 1, firstNameBox);
-        form.setWidget(2, 0, new Label("Last Name: "));
-        form.setWidget(2, 1, lastNameBox);
-        form.setWidget(3, 0, new Label("Date of Birth: "));
-        form.setWidget(3, 1, dateOfBirthBox);
-        form.setWidget(4, 0, new Label("Address: "));
-        form.setWidget(4, 1, addressBox);
-        form.setWidget(5, 0, new Label("e-mail: "));
-        form.setWidget(5, 1, emailBox);
-        form.setWidget(6, 0, new Label("Password: "));
-        form.setWidget(6, 1, passwordBox);
-        form.setWidget(7, 0, new Label("Confirm Password: "));
-        form.setWidget(7, 1, confirmPasswordBox);
+        addClientsGrid.setWidget(0, 0, addTitle);
+        addClientsGrid.setWidget(1, 0, new Label("First Name: "));
+        addClientsGrid.setWidget(1, 1, firstNameBox);
+        addClientsGrid.setWidget(2, 0, new Label("Last Name: "));
+        addClientsGrid.setWidget(2, 1, lastNameBox);
+        addClientsGrid.setWidget(3, 0, new Label("Date of Birth: "));
+        addClientsGrid.setWidget(3, 1, dateOfBirthBox);
+        addClientsGrid.setWidget(4, 0, new Label("Address: "));
+        addClientsGrid.setWidget(4, 1, addressBox);
+        addClientsGrid.setWidget(5, 0, new Label("e-mail: "));
+        addClientsGrid.setWidget(5, 1, emailBox);
+        addClientsGrid.setWidget(6, 0, new Label("Password: "));
+        addClientsGrid.setWidget(6, 1, passwordBox);
+        addClientsGrid.setWidget(7, 0, new Label("Confirm Password: "));
+        addClientsGrid.setWidget(7, 1, confirmPasswordBox);
         HorizontalPanel genderPanel = new HorizontalPanel();
         genderPanel.add(genderMRadio);
         genderPanel.add(genderFRadio);
-        form.setWidget(8, 0, new Label("Gender: "));
-        form.setWidget(8, 1, genderPanel);
-        form.setWidget(9, 0, addClientButton);
+        addClientsGrid.setWidget(8, 0, new Label("Gender: "));
+        addClientsGrid.setWidget(8, 1, genderPanel);
+        addClientsGrid.setWidget(9, 0, addClientButton);
         //String password, Gender gender, Date dateOfBirth
         
-        form.setWidget(0, 2, removeTitle);
-        form.setWidget(1, 2, new Label("Client: "));
-        form.setWidget(1, 3, clientsList);
-        form.setWidget(2, 2, removeClientButton);
-        vPanel.add(form);
+        removeClientsGrid.setWidget(0, 0, removeTitle);
+        removeClientsGrid.setWidget(1, 0, new Label("Client: "));
+        removeClientsGrid.setWidget(1, 1, clientsList);
+        removeClientsGrid.setWidget(2, 0, removeClientButton);
+        
+        final HorizontalPanel hPanel = new HorizontalPanel();
+        hPanel.add(addClientsGrid);
+        hPanel.add(removeClientsGrid);
+        vPanel.add(hPanel);
         
         updateClientsList();
     }
     
     private boolean validateForm() {
-        popupWidget = new PopupWidget("Invalid data!", false);
-        popupWidget.show();
-        popupWidget.addOKHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                popupWidget.hide();
-            }
-        });
-        return false;
+//        popupWidget = new PopupWidget("Invalid data!", false);
+//        popupWidget.show();
+//        popupWidget.addOKHandler(new ClickHandler() {
+//            @Override
+//            public void onClick(ClickEvent event) {
+//                popupWidget.hide();
+//            }
+//        });
+        return true;
     }
     
     private void clearForm() {
