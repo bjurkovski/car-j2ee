@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
+import org.banque.client.SessionManager;
 import org.banque.client.pages.WebPage;
 import org.banque.dtos.ClientDTO;
 import org.banque.managers.ClientManager;
@@ -28,7 +29,7 @@ import org.banque.managers.interfaces.IClientManagerLocal;
  *
  * @author bjurkovski
  */
-public class SearchClientsPage implements WebPage {
+public class SearchClientsPage extends WebPage {
     private VerticalPanel vPanel;
     private Label pageTitle;
     private TextBox searchBox;
@@ -38,8 +39,34 @@ public class SearchClientsPage implements WebPage {
     private VerticalPanel resultsPanel;
     private AsyncCallback<List<ClientDTO>> updateSearchResultsCallback;
     
+    private void search() {
+        resultsPanel.clear();
+        final Label l = new Label("Search Results:");
+        l.setStyleName("title");
+        resultsPanel.add(l);
+        int selectedCategory = categoriesList.getSelectedIndex();
+        int sc = Integer.valueOf(categoriesList.getValue(selectedCategory));
+        getService().findClientsByCriteria(searchBox.getText(), sc, updateSearchResultsCallback);
+    }
+    
+    private void findAll() {
+        resultsPanel.clear();
+        final Label l = new Label("All Clients:");
+        l.setStyleName("title");
+        resultsPanel.add(l);
+        getService().findAllClients(updateSearchResultsCallback);
+    }
+    
+    public static BanqueServiceAsync getService() {
+        return GWT.create(BanqueService.class);
+    }
+    
     public SearchClientsPage() {
-        vPanel = new VerticalPanel();
+        setupPage();
+    }
+    
+    public void setupPage() {
+         vPanel = new VerticalPanel();
         pageTitle = new Label("Search Clients");
         pageTitle.setStyleName("title");
         searchBox = new TextBox();
@@ -91,28 +118,6 @@ public class SearchClientsPage implements WebPage {
                 }
             }
         };
-    }
-    
-    private void search() {
-        resultsPanel.clear();
-        final Label l = new Label("Search Results:");
-        l.setStyleName("title");
-        resultsPanel.add(l);
-        int selectedCategory = categoriesList.getSelectedIndex();
-        int sc = Integer.valueOf(categoriesList.getValue(selectedCategory));
-        getService().findClientsByCriteria(searchBox.getText(), sc, updateSearchResultsCallback);
-    }
-    
-    private void findAll() {
-        resultsPanel.clear();
-        final Label l = new Label("All Clients:");
-        l.setStyleName("title");
-        resultsPanel.add(l);
-        getService().findAllClients(updateSearchResultsCallback);
-    }
-    
-    public static BanqueServiceAsync getService() {
-        return GWT.create(BanqueService.class);
     }
     
     @Override

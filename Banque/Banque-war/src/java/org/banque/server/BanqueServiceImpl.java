@@ -32,6 +32,32 @@ public class BanqueServiceImpl extends RemoteServiceServlet implements BanqueSer
     
     @EJB
     IAccountManagerLocal accountManager;
+    
+    @Override
+    public String[] login(String email, String password) {
+        String ret[] = {null, null, null};
+        
+        try {
+            List<ClientDTO> lc = clientManager.findClientsByEmail(email, true);
+            if(lc != null && lc.size() > 0) {
+                ClientDTO client = lc.get(0);
+                if(client.getPassword() == password) {
+                    ret[0] = "1";
+                    ret[1] = email;
+                    if(client.isAdmin()) ret[2] = "admin";
+                    else ret[2] = "user";
+                }
+            }
+        } catch (BanqueException ex) {
+        }
+        
+        return ret;
+    }
+    
+    @Override
+    public void logout() {
+        
+    }
 
     @Override
     public void createClient(ClientDTO client) throws BanqueException {

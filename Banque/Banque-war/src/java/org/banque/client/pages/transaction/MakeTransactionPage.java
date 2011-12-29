@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
+import org.banque.client.SessionManager;
 import org.banque.client.pages.WebPage;
 import org.banque.dtos.AccountDTO;
 import org.banque.dtos.ClientDTO;
@@ -31,7 +32,7 @@ import org.banque.managers.interfaces.IAccountManagerLocal;
  *
  * @author bjurkovski
  */
-public class MakeTransactionPage implements WebPage {
+public class MakeTransactionPage extends WebPage {
     private static final int SRC = 0;
     private static final int DST = 1;
     
@@ -50,7 +51,45 @@ public class MakeTransactionPage implements WebPage {
     
     private AsyncCallback<List<AccountDTO>>[] updateAccountsListCallback;
     
+    private void filterAccounts(int srcOrDst) {
+        if(srcOrDst==SRC || srcOrDst==DST) {
+            int searchCriteriaIdx = searchCriteriaList[srcOrDst].getSelectedIndex();
+            int searchCriteria = Integer.valueOf(searchCriteriaList[srcOrDst].getValue(searchCriteriaIdx));
+            
+            if(searchCriteria == IAccountManagerLocal.ALL)
+                findAllAccounts(srcOrDst);
+            else
+                getService().findAccountsByCriteria(searchBox[srcOrDst].getText(), searchCriteria, updateAccountsListCallback[srcOrDst]);
+        }
+    }
+    
+    private void findAllAccounts(int srcOrDst) {
+        if(srcOrDst==SRC || srcOrDst==DST) {
+            getService().findAllAccounts(updateAccountsListCallback[srcOrDst]);
+        }
+    }
+    
+    private void updateListedAccounts() {
+        ArrayList<Long>[] ids = new ArrayList[2];
+        for(int i=0; i<2; i++) {
+            ids[i] = new ArrayList<Long>();
+            for(int j=0; j<accountsList[i].getItemCount(); j++) {
+                Long accountId = Long.valueOf(accountsList[i].getValue(j));
+                ids[i].add(accountId);
+            }
+            getService().findAccounts(ids[i], updateAccountsListCallback[i]);
+        }
+    }
+    
+    public static BanqueServiceAsync getService() {
+        return GWT.create(BanqueService.class);
+    }
+    
     public MakeTransactionPage() {
+        setupPage();
+    }
+    
+    public void setupPage() {
         vPanel = new VerticalPanel();
         pageTitle = new Label("Make Transaction");
         sourceTitle = new Label("Source");
@@ -83,8 +122,10 @@ public class MakeTransactionPage implements WebPage {
             searchCriteriaList[i] = new ListBox();
             searchCriteriaList[i].addItem("Negative Balance", String.valueOf(IAccountManagerLocal.BALANCE_NEGATIVE));
             searchCriteriaList[i].addItem("Positive Balance", String.valueOf(IAccountManagerLocal.BALANCE_POSITIVE));
-            searchCriteriaList[i].addItem("Client Name", String.valueOf(IAccountManagerLocal.PRENOM_CLIENT));
-            searchCriteriaList[i].addItem("Client Last Name", String.valueOf(IAccountManagerLocal.NOM_CLIENT));
+            if(sessionManager.isAdmin()) {
+                searchCriteriaList[i].addItem("Client Name", String.valueOf(IAccountManagerLocal.PRENOM_CLIENT));
+                searchCriteriaList[i].addItem("Client Last Name", String.valueOf(IAccountManagerLocal.NOM_CLIENT));
+            }
             searchCriteriaList[i].addItem("ID", String.valueOf(IAccountManagerLocal.ID));
             searchCriteriaList[i].addItem("All", String.valueOf(IAccountManagerLocal.ALL));
         }
@@ -116,9 +157,11 @@ public class MakeTransactionPage implements WebPage {
                     currentList.clear();
                     for(AccountDTO a : result) {
                         ClientDTO c = a.getOwner();
-                        String cName = c.getName() + " " + c.getLastName();
-                        currentList.addItem(String.valueOf(a.getId()) + " (" + cName + ") - Balance: " + a.getBalance(),
-                                            String.valueOf(a.getId()));
+                        if(sessionManager.isAdmin() || c.getEmail().equals(sessionManager.getUsername())) {
+                            String cName = c.getName() + " " + c.getLastName();
+                            currentList.addItem(String.valueOf(a.getId()) + " (" + cName + ") - Balance: " + a.getBalance(),
+                                                String.valueOf(a.getId()));
+                        }
                     }
                 }
             };
@@ -178,40 +221,6 @@ public class MakeTransactionPage implements WebPage {
         pageHPanel.add(sourceGrid);
         pageHPanel.add(destinationGrid);
         vPanel.add(pageHPanel);
-    }
-    
-    private void filterAccounts(int srcOrDst) {
-        if(srcOrDst==SRC || srcOrDst==DST) {
-            int searchCriteriaIdx = searchCriteriaList[srcOrDst].getSelectedIndex();
-            int searchCriteria = Integer.valueOf(searchCriteriaList[srcOrDst].getValue(searchCriteriaIdx));
-            
-            if(searchCriteria == IAccountManagerLocal.ALL)
-                findAllAccounts(srcOrDst);
-            else
-                getService().findAccountsByCriteria(searchBox[srcOrDst].getText(), searchCriteria, updateAccountsListCallback[srcOrDst]);
-        }
-    }
-    
-    private void findAllAccounts(int srcOrDst) {
-        if(srcOrDst==SRC || srcOrDst==DST) {
-            getService().findAllAccounts(updateAccountsListCallback[srcOrDst]);
-        }
-    }
-    
-    private void updateListedAccounts() {
-        ArrayList<Long>[] ids = new ArrayList[2];
-        for(int i=0; i<2; i++) {
-            ids[i] = new ArrayList<Long>();
-            for(int j=0; j<accountsList[i].getItemCount(); j++) {
-                Long accountId = Long.valueOf(accountsList[i].getValue(j));
-                ids[i].add(accountId);
-            }
-            getService().findAccounts(ids[i], updateAccountsListCallback[i]);
-        }
-    }
-    
-    public static BanqueServiceAsync getService() {
-        return GWT.create(BanqueService.class);
     }
 
     @Override

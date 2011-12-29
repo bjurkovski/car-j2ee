@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
+import org.banque.client.SessionManager;
 import org.banque.client.pages.accounts.SearchAccountsPage;
 import org.banque.client.pages.transaction.MakeTransactionPage;
 import org.banque.client.pages.transaction.TransactionsLogPage;
@@ -22,10 +23,9 @@ import org.banque.client.pages.transaction.TransactionsLogPage;
  *
  * @author bjurkovski
  */
-public class TransactionsPage implements WebPage {
+public class TransactionsPage extends WebPage {
     private MenuBar menu = new MenuBar();
     private DockPanel panel = new DockPanel();
-    private BanqueServiceAsync b = GWT.create(BanqueService.class);
     private MakeTransactionPage makeTransactionPage = new MakeTransactionPage();
     private TransactionsLogPage logPage = new TransactionsLogPage();
     private Widget currentPage = null;
@@ -55,6 +55,16 @@ public class TransactionsPage implements WebPage {
     }
     
     public TransactionsPage() {
+        setupPage();
+    }
+    
+    public void setupPage() {
+        menu = new MenuBar();
+        panel = new DockPanel();
+        makeTransactionPage = new MakeTransactionPage();
+        logPage = new TransactionsLogPage();
+        currentPage = null;
+    
         menu.addItem(new MenuItem("Make Transaction", new MenuAction("Make Transaction")));
         menu.addItem(new MenuItem("View Log", new MenuAction("Transaction Log")));
         menu.setWidth("960px");

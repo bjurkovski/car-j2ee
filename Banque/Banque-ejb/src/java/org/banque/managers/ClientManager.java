@@ -182,10 +182,15 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
     }
     
     @Override
-    public List<ClientDTO> findClientsByEmail(String searchString) throws BanqueException {
+    public List<ClientDTO> findClientsByEmail(String searchString, boolean exactMatch) throws BanqueException {
         List<ClientDTO> _return = new LinkedList<ClientDTO>();
         try {
-            Query query = em.createNamedQuery(Client.FIND_BY_EMAIL).setParameter("email", "%" + searchString + "%");
+            Query query;
+            if(exactMatch)
+                query = em.createNamedQuery(Client.FIND_BY_EMAIL);
+            else
+                query = em.createNamedQuery(Client.FIND_BY_EMAIL_EQUAL);
+            query.setParameter("email", "%" + searchString + "%");
             List<Client> results = query.getResultList();
             for (Client c : results) {
                 _return.add(createClientDTO(c));
@@ -195,6 +200,11 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
             System.out.println("Original Error Message: " + e.getMessage());
             throw new BanqueException(BanqueException.ErrorType.DATABASE_ERROR);
         }
+    }
+    
+    @Override
+    public List<ClientDTO> findClientsByEmail(String searchString) throws BanqueException {
+        return findClientsByEmail(searchString, false);
     }
 
     @Override
@@ -261,6 +271,12 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
         if (client.getEmail() == null || client.getEmail().isEmpty()) {
             throw new BanqueException(BanqueException.ErrorType.CLIENT_NULL_EMAIL);
         }
+        
+        List<ClientDTO> lc = findClientsByEmail(client.getEmail(), true);
+        if(lc != null && lc.size() > 0) {
+            throw new BanqueException(BanqueException.ErrorType.CLIENT_EMAIL_ALREADY_USED);
+        }
+        
         //ID cannot exist and if it exists, must be the same as us
         if (findClient(client.getId()) != null && findClient(client.getId()).getId() != client.getId()) {
             throw new BanqueException(BanqueException.ErrorType.CLIENT_ID_ALREADY_EXISTS);

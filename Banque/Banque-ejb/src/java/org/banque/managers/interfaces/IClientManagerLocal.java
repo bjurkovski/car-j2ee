@@ -94,6 +94,8 @@ public interface IClientManagerLocal {
     
     public List<ClientDTO> findClientsByLastName(String searchString) throws BanqueException;
     
+    public List<ClientDTO> findClientsByEmail(String searchString, boolean exactMatch) throws BanqueException;
+    
     public List<ClientDTO> findClientsByEmail(String searchString) throws BanqueException;
 
     /**

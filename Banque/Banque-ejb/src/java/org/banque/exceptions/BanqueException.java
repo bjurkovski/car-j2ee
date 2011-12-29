@@ -25,6 +25,7 @@ public class BanqueException extends Exception implements Serializable {
         CLIENT_NULL_DATE_OF_BIRTH,
         CLIENT_NULL_EMAIL,
         CLIENT_ID_ALREADY_EXISTS,
+        CLIENT_EMAIL_ALREADY_USED,
         INVALID_EMAIL,
         INVALID_SEARCH_CRITERIA,
         TRANSACTION_AMOUNT_INVALID,

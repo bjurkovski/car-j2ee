@@ -19,6 +19,7 @@ import javax.persistence.Temporal;
     @NamedQuery(name = Client.FIND_BY_NAME, query = "SELECT c FROM Client c WHERE c.name LIKE :name"),
     @NamedQuery(name = Client.FIND_BY_LAST_NAME, query = "SELECT c FROM Client c WHERE c.lastName LIKE :lastName"),
     @NamedQuery(name = Client.FIND_BY_EMAIL, query = "SELECT c FROM Client c WHERE c.email LIKE :email"),
+    @NamedQuery(name = Client.FIND_BY_EMAIL_EQUAL, query = "SELECT c FROM Client c WHERE c.email = :email"),
     @NamedQuery(name = Client.FIND_PARTIALLY, query = "SELECT c FROM Client c WHERE c.name LIKE :partial OR c.lastName LIKE :partial"),
     @NamedQuery(name = Client.FIND_BY_SUBSCRIPTION_DATE, query = "SELECT c FROM Client c WHERE c.dateOfSubscription = :subsdate")
 })
@@ -28,6 +29,7 @@ public class Client extends Person {
     public static final String FIND_BY_NAME = "findByName";
     public static final String FIND_BY_LAST_NAME = "findByLastName";
     public static final String FIND_BY_EMAIL = "findByEmail";
+    public static final String FIND_BY_EMAIL_EQUAL = "findByEmailEqual";
     public static final String FIND_PARTIALLY = "findClientsPartially";
     public static final String FIND_BY_SUBSCRIPTION_DATE = "findClientsBySubscriptionDate";
     @Temporal(javax.persistence.TemporalType.DATE)

@@ -4,7 +4,11 @@
  */
 package org.banque.client.pages;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.DockPanel;
@@ -17,12 +21,20 @@ import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import java.util.Date;
+import java.util.List;
+import org.banque.client.BanqueService;
+import org.banque.client.BanqueServiceAsync;
+import org.banque.client.SessionManager;
+import org.banque.dtos.ClientDTO;
+import org.banque.dtos.PersonDTO.Gender;
+import org.banque.entities.Person;
 
 /**
  *
  * @author bjurkovski
  */
-public class MainPage implements WebPage {
+public class MainPage extends WebPage {
     protected DockPanel mainPanel = new DockPanel();
     protected MenuBar menuBar = new MenuBar();
     protected VerticalPanel menuPanel = new VerticalPanel();
@@ -64,30 +76,93 @@ public class MainPage implements WebPage {
     }
     
     public MainPage() {
+        sessionManager.registerWebPage(this);
+        setupPage();
+        createAdminAccount();
+    }
+    
+    /*
+     * This is just a development method. DO NOT use in production.
+     * It checks if the database is empty and then creates a default
+     * admin account.
+     */
+    private void createAdminAccount() {
+        ClientDTO admin = new ClientDTO("root-name", "root-lastname", "admin", ClientDTO.Gender.MALE, new Date(), "My Address", "root@admin.com", true);
+        getService().createClient(admin, new AsyncCallback<Void>() {
+            @Override
+            public void onFailure(Throwable caught) { menuPanel.add(new Label(caught.toString())); }
+            @Override
+            public void onSuccess(Void result) { menuPanel.add(new Label("foi")); }
+        });
+    }
+    
+    public void setupPage() {
+        manageClientsPage.setupPage();
+        manageAccountsPage.setupPage();
+        transactionsPage.setupPage();
+        
+        mainPanel.clear();
+    
         /*
          * http://stackoverflow.com/questions/1061705/multiple-pages-tutorial-in-google-web-toolkit-gwt
          * http://code.google.com/webtoolkit/articles/mvp-architecture.html
          */
-        menuBar.addItem(new MenuItem("Manage Clients", new MenuAction("Manage Clients")));
-        menuBar.addItem(new MenuItem("Manage Accounts", new MenuAction("Manage Accounts")));
-        menuBar.addItem(new MenuItem("Transactions", new MenuAction("Transactions")));
+        menuBar.clearItems();
+        if(sessionManager.isAdmin()) {
+            menuBar.addItem(new MenuItem("Manage Clients", new MenuAction("Manage Clients")));
+        }
+        
+        if(sessionManager.isLoggedIn()) {
+            menuBar.addItem(new MenuItem("Manage Accounts", new MenuAction("Manage Accounts")));
+            menuBar.addItem(new MenuItem("Transactions", new MenuAction("Transactions")));
+        }
         menuBar.setWidth("960px");
         
-        Label title = new Label("Banque du Brésil");
+        Label title = new Label("Banque Alpin");
         title.setStyleName("title");
         
-        final HorizontalPanel loginPanel = new HorizontalPanel();
-        loginPanel.add(loginBox);
-        loginPanel.add(passwBox);
-        loginPanel.add(loginLink);
+        loginLink.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                try {
+                    sessionManager.login(loginBox.getValue(), passwBox.getValue());
+                } catch(Exception e) {
+                    mainPanel.add(new Label(e.toString()), DockPanel.WEST);
+                }
+            }
+        });
         
+        logoutLink.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                sessionManager.logout();
+            }
+        });
+        
+        HorizontalPanel loginPanel = new HorizontalPanel();
+        if(sessionManager.isLoggedIn()) {
+            loginPanel.add(logoutLink);
+        }
+        else {
+            loginPanel.add(loginBox);
+            loginPanel.add(passwBox);
+            loginPanel.add(loginLink);
+        }
+        
+        menuPanel.clear();
         menuPanel.add(loginPanel);
         menuPanel.add(title);
+        //if(s == SessionManager.UserRole.ADMIN)
+        //    menuPanel.add(new Label("eh admin"));
         menuPanel.add(menuBar);
         
         menuPanel.setCellHorizontalAlignment(menuPanel.getWidget(0), VerticalPanel.ALIGN_RIGHT);
 
         mainPanel.add(menuPanel, DockPanel.NORTH);
+    }
+    
+    public BanqueServiceAsync getService() {
+        return GWT.create(BanqueService.class);
     }
     
     public Widget getWidget() {

@@ -17,6 +17,10 @@ import org.banque.managers.interfaces.IClientManagerLocal;
  * @author bjurkovski
  */
 public interface BanqueServiceAsync {
+    public void login(String email, String password, AsyncCallback<String[]> callback);
+    
+    public void logout(AsyncCallback<Void> callback);
+    
     public void createClient(ClientDTO client, AsyncCallback<Void> callback);
     
     public void removeClient(Long clientId, AsyncCallback<Void> callback);

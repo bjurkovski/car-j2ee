@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
+import org.banque.client.SessionManager;
 import org.banque.client.pages.accounts.AddRemoveAccountsPage;
 import org.banque.client.pages.accounts.SearchAccountsPage;
 import org.banque.client.pages.clients.AddRemoveClientsPage;
@@ -22,10 +23,9 @@ import org.banque.client.pages.clients.AddRemoveClientsPage;
  *
  * @author bjurkovski
  */
-public class ManageAccountsPage implements WebPage {
+public class ManageAccountsPage extends WebPage {
     private MenuBar menu = new MenuBar();
     private DockPanel panel = new DockPanel();
-    private BanqueServiceAsync b = GWT.create(BanqueService.class);
     private AddRemoveAccountsPage addRemovePage = new AddRemoveAccountsPage();
     private SearchAccountsPage searchPage = new SearchAccountsPage();
     private Widget currentPage = null;
@@ -55,7 +55,19 @@ public class ManageAccountsPage implements WebPage {
     }
     
     public ManageAccountsPage() {
-        menu.addItem(new MenuItem("Add Account", new MenuAction("AddRemove Accounts")));
+        setupPage();
+    }
+    
+    public void setupPage() {
+        menu = new MenuBar();
+        panel = new DockPanel();
+        addRemovePage = new AddRemoveAccountsPage();
+        searchPage = new SearchAccountsPage();
+        currentPage = null;
+    
+        if(sessionManager.isAdmin()) {
+            menu.addItem(new MenuItem("Add Account", new MenuAction("AddRemove Accounts")));
+        }
         menu.addItem(new MenuItem("Search Account", new MenuAction("Search Accounts")));
         menu.setWidth("960px");
         

@@ -4,17 +4,9 @@
         <servlet-name>BanqueService</servlet-name>
         <servlet-class>org.banque.server.BanqueServiceImpl</servlet-class>
     </servlet>
-    <servlet>
-        <servlet-name>GWTService</servlet-name>
-        <servlet-class>org.banque.server.GWTServiceImpl</servlet-class>
-    </servlet>
     <servlet-mapping>
         <servlet-name>BanqueService</servlet-name>
         <url-pattern>/org.banque.Main/banqueservice</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>GWTService</servlet-name>
-        <url-pattern>/org.banque.Main/gwtservice</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

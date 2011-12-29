@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
+import org.banque.client.SessionManager;
 import org.banque.client.pages.WebPage;
 import org.banque.client.ui.PopupWidget;
 import org.banque.dtos.ClientDTO;
@@ -44,7 +45,7 @@ import org.banque.server.BanqueServiceImpl;
  *
  * @author bjurkovski
  */
-public class AddRemoveClientsPage implements WebPage {
+public class AddRemoveClientsPage extends WebPage {
     private VerticalPanel vPanel;
     private Label pageTitle;
     private Label addTitle;
@@ -65,7 +66,55 @@ public class AddRemoveClientsPage implements WebPage {
     private Button removeClientButton;
     private PopupWidget popupWidget;
     
+    private boolean validateForm() {
+//        popupWidget = new PopupWidget("Invalid data!", false);
+//        popupWidget.show();
+//        popupWidget.addOKHandler(new ClickHandler() {
+//            @Override
+//            public void onClick(ClickEvent event) {
+//                popupWidget.hide();
+//            }
+//        });
+        return true;
+    }
+    
+    private void clearForm() {
+        firstNameBox.setText("");
+        lastNameBox.setText("");
+        addressBox.setText("");
+        emailBox.setText("");
+        dateOfBirthBox.setText("");
+        passwordBox.setText("");
+        confirmPasswordBox.setText("");
+    }
+    
+    private void updateClientsList() {
+        final AsyncCallback<List<ClientDTO>> updateClientsListCallback = new AsyncCallback<List<ClientDTO>>() {
+            public void onSuccess(List<ClientDTO> result) {
+                clientsList.clear();
+                for(Iterator<ClientDTO> i = result.iterator(); i.hasNext(); ) {
+                    ClientDTO client = i.next();
+                    clientsList.addItem(client.getName() + " " + client.getLastName(), 
+                                        String.valueOf(client.getId()));
+                }
+            }
+
+            public void onFailure(Throwable caught) {
+            }
+        };
+        
+        getService().findAllClients(updateClientsListCallback);
+    }
+    
+    public static BanqueServiceAsync getService() {
+        return GWT.create(BanqueService.class);
+    }
+    
     public AddRemoveClientsPage() {
+        setupPage();
+    }
+    
+    public void setupPage() {
         vPanel = new VerticalPanel();
         pageTitle = new Label("Manage Clients");
         addTitle = new Label("Add Client");
@@ -117,19 +166,24 @@ public class AddRemoveClientsPage implements WebPage {
                     gender = ClientDTO.Gender.MALE;
                 }
                 
-                String dateStr = dateOfBirthBox.getValue();
-                DateTimeFormat dd = DateTimeFormat.getFormat("dd/MM/yyyy");
-                Date dateOfBirth = dd.parse(dateStr);
+                try {
+                    String dateStr = dateOfBirthBox.getValue();
+                    DateTimeFormat dd = DateTimeFormat.getFormat("dd/MM/yyyy");
+                    Date dateOfBirth = dd.parse(dateStr);
                 
-                ClientDTO client = new ClientDTO(firstNameBox.getValue(),
-                                                lastNameBox.getValue(),
-                                                passwordBox.getValue(),
-                                                gender,
-                                                dateOfBirth,
-                                                addressBox.getValue(),
-                                                emailBox.getValue());
-                if(validateForm()) {
-                    getService().createClient(client, updateClientsCallback);
+                    ClientDTO client = new ClientDTO(firstNameBox.getValue(),
+                                                    lastNameBox.getValue(),
+                                                    passwordBox.getValue(),
+                                                    gender,
+                                                    dateOfBirth,
+                                                    addressBox.getValue(),
+                                                    emailBox.getValue());
+                    if(validateForm()) {
+                        getService().createClient(client, updateClientsCallback);
+                    }
+                }
+                catch(Exception e) {
+                    
                 }
             }
         });
@@ -182,50 +236,6 @@ public class AddRemoveClientsPage implements WebPage {
         vPanel.add(hPanel);
         
         updateClientsList();
-    }
-    
-    private boolean validateForm() {
-//        popupWidget = new PopupWidget("Invalid data!", false);
-//        popupWidget.show();
-//        popupWidget.addOKHandler(new ClickHandler() {
-//            @Override
-//            public void onClick(ClickEvent event) {
-//                popupWidget.hide();
-//            }
-//        });
-        return true;
-    }
-    
-    private void clearForm() {
-        firstNameBox.setText("");
-        lastNameBox.setText("");
-        addressBox.setText("");
-        emailBox.setText("");
-        dateOfBirthBox.setText("");
-        passwordBox.setText("");
-        confirmPasswordBox.setText("");
-    }
-    
-    private void updateClientsList() {
-        final AsyncCallback<List<ClientDTO>> updateClientsListCallback = new AsyncCallback<List<ClientDTO>>() {
-            public void onSuccess(List<ClientDTO> result) {
-                clientsList.clear();
-                for(Iterator<ClientDTO> i = result.iterator(); i.hasNext(); ) {
-                    ClientDTO client = i.next();
-                    clientsList.addItem(client.getName() + " " + client.getLastName(), 
-                                        String.valueOf(client.getId()));
-                }
-            }
-
-            public void onFailure(Throwable caught) {
-            }
-        };
-        
-        getService().findAllClients(updateClientsListCallback);
-    }
-    
-    public static BanqueServiceAsync getService() {
-        return GWT.create(BanqueService.class);
     }
     
     @Override

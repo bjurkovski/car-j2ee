@@ -20,6 +20,10 @@ import org.banque.managers.interfaces.IClientManagerLocal;
  */
 @RemoteServiceRelativePath("banqueservice")
 public interface BanqueService extends RemoteService {
+    public String[] login(String email, String password);
+    
+    public void logout();
+    
     public void createClient(ClientDTO client) throws BanqueException;
     
     public void removeClient(Long clientId);
