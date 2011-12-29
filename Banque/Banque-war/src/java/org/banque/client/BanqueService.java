@@ -32,7 +32,7 @@ public interface BanqueService extends RemoteService {
     
     public List<ClientDTO> findClientsByCriteria(String searchStr, int criteria);
     
-    public void createAccount(Long ownerId);
+    public void createAccount(Long ownerId, double initialBalance, boolean alertWhenNegative);
     
     public void removeAccount(Long accountId);
     

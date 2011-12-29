@@ -119,7 +119,7 @@ public class TransactionsLogPage extends WebPage {
                     String dst = t.getDestination().getOwner().getEmail();
                     String usr = sessionManager.getUsername();
                     if(sessionManager.isAdmin() || src.equals(usr) || dst.equals(usr)) {
-                        resultsPanel.add(new Label("From " + t.getSource() + " to " + t.getDestination()));
+                        resultsPanel.add(new Label(t.getAmount() + "$ from '" + t.getSource() + "' to '" + t.getDestination() + "'"));
                     }
                 }
             }

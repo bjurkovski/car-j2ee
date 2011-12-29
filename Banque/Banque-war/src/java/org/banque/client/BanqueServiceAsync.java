@@ -29,7 +29,7 @@ public interface BanqueServiceAsync {
     
     public void findClientsByCriteria(String searchStr, int criteria, AsyncCallback<List<ClientDTO>> callback);
     
-    public void createAccount(Long ownerId, AsyncCallback<Void> callback);
+    public void createAccount(Long ownerId, double initialBalance, boolean alertWhenNegative, AsyncCallback<Void> callback);
     
     public void removeAccount(Long accountId, AsyncCallback<Void> callback);
     

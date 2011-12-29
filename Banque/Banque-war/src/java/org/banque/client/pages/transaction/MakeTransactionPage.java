@@ -23,6 +23,7 @@ import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
 import org.banque.client.SessionManager;
 import org.banque.client.pages.WebPage;
+import org.banque.client.ui.PopupWidget;
 import org.banque.dtos.AccountDTO;
 import org.banque.dtos.ClientDTO;
 import org.banque.dtos.TransactionDTO;
@@ -48,6 +49,7 @@ public class MakeTransactionPage extends WebPage {
     private ListBox[] accountsList;
     private TextBox amountBox;
     private Button confirmTransactionButton;
+    private PopupWidget popupWidget;
     
     private AsyncCallback<List<AccountDTO>>[] updateAccountsListCallback;
     
@@ -89,6 +91,21 @@ public class MakeTransactionPage extends WebPage {
         setupPage();
     }
     
+    private void showConfirmBox(ClickHandler onConfirm) {
+        popupWidget = new PopupWidget("Confirmation box", true);
+        popupWidget.setContent(new Label("Are you sure?"));
+        popupWidget.show();
+
+        popupWidget.addOKHandler(onConfirm);
+
+        popupWidget.addCancelHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                popupWidget.hide();
+            }
+        });
+    }
+    
     public void setupPage() {
         vPanel = new VerticalPanel();
         pageTitle = new Label("Make Transaction");
@@ -120,14 +137,15 @@ public class MakeTransactionPage extends WebPage {
         searchCriteriaList = new ListBox[2];
         for(int i=0; i<2; i++) {
             searchCriteriaList[i] = new ListBox();
+            searchCriteriaList[i].addItem("All", String.valueOf(IAccountManagerLocal.ALL));
+            searchCriteriaList[i].addItem("ID", String.valueOf(IAccountManagerLocal.ID));
             searchCriteriaList[i].addItem("Negative Balance", String.valueOf(IAccountManagerLocal.BALANCE_NEGATIVE));
             searchCriteriaList[i].addItem("Positive Balance", String.valueOf(IAccountManagerLocal.BALANCE_POSITIVE));
-            if(sessionManager.isAdmin()) {
+            if(i==DST || sessionManager.isAdmin()) {
                 searchCriteriaList[i].addItem("Client Name", String.valueOf(IAccountManagerLocal.PRENOM_CLIENT));
                 searchCriteriaList[i].addItem("Client Last Name", String.valueOf(IAccountManagerLocal.NOM_CLIENT));
             }
-            searchCriteriaList[i].addItem("ID", String.valueOf(IAccountManagerLocal.ID));
-            searchCriteriaList[i].addItem("All", String.valueOf(IAccountManagerLocal.ALL));
+            
         }
         
         accountsList = new ListBox[2];
@@ -157,10 +175,13 @@ public class MakeTransactionPage extends WebPage {
                     currentList.clear();
                     for(AccountDTO a : result) {
                         ClientDTO c = a.getOwner();
-                        if(sessionManager.isAdmin() || c.getEmail().equals(sessionManager.getUsername())) {
+                        boolean ownsAccount = sessionManager.isAdmin() || c.getEmail().equals(sessionManager.getUsername());
+                        if(ownsAccount || currentList==accountsList[DST]) {
                             String cName = c.getName() + " " + c.getLastName();
-                            currentList.addItem(String.valueOf(a.getId()) + " (" + cName + ") - Balance: " + a.getBalance(),
-                                                String.valueOf(a.getId()));
+                            String item = String.valueOf(a.getId()) + " (" + cName + ")";
+                            if(ownsAccount)
+                                item += " - Balance: " + a.getBalance();
+                            currentList.addItem(item, String.valueOf(a.getId()));
                         }
                     }
                 }
@@ -181,15 +202,21 @@ public class MakeTransactionPage extends WebPage {
         confirmTransactionButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                try {
-                    int srcSelectedIdx = accountsList[SRC].getSelectedIndex();
-                    int dstSelectedIdx = accountsList[DST].getSelectedIndex();
-                    Long srcId = Long.valueOf(accountsList[SRC].getValue(srcSelectedIdx));
-                    Long dstId = Long.valueOf(accountsList[DST].getValue(dstSelectedIdx));
-                    double amount = Double.valueOf(amountBox.getText());
-                    getService().makeTransaction(srcId, dstId, amount, confirmTransactionCallbak);
-                } catch(IndexOutOfBoundsException e) {
-                }
+                showConfirmBox(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        try {
+                            int srcSelectedIdx = accountsList[SRC].getSelectedIndex();
+                            int dstSelectedIdx = accountsList[DST].getSelectedIndex();
+                            Long srcId = Long.valueOf(accountsList[SRC].getValue(srcSelectedIdx));
+                            Long dstId = Long.valueOf(accountsList[DST].getValue(dstSelectedIdx));
+                            double amount = Double.valueOf(amountBox.getText());
+                            getService().makeTransaction(srcId, dstId, amount, confirmTransactionCallbak);
+                        } catch(IndexOutOfBoundsException e) {
+                        }
+                        popupWidget.hide();
+                    }
+                });   
             }
         });
         

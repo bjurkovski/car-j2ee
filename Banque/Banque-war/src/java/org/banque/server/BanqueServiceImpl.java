@@ -41,7 +41,7 @@ public class BanqueServiceImpl extends RemoteServiceServlet implements BanqueSer
             List<ClientDTO> lc = clientManager.findClientsByEmail(email, true);
             if(lc != null && lc.size() > 0) {
                 ClientDTO client = lc.get(0);
-                if(client.getPassword() == password) {
+                if(clientManager.authenticateClient(client.getId(), password) != null) {
                     ret[0] = "1";
                     ret[1] = email;
                     if(client.isAdmin()) ret[2] = "admin";
@@ -91,10 +91,10 @@ public class BanqueServiceImpl extends RemoteServiceServlet implements BanqueSer
     }
     
     @Override
-    public void createAccount(Long ownerId) {
+    public void createAccount(Long ownerId, double initialBalance, boolean alertWhenNegative) {
         try {
             ClientDTO owner = clientManager.findClient(ownerId);
-            accountManager.createAccount(owner);
+            accountManager.createAccount(owner, initialBalance, alertWhenNegative);
         } catch (BanqueException ex) {
         }
     }

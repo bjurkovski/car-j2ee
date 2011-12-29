@@ -66,16 +66,16 @@ public class AddRemoveClientsPage extends WebPage {
     private Button removeClientButton;
     private PopupWidget popupWidget;
     
-    private boolean validateForm() {
-//        popupWidget = new PopupWidget("Invalid data!", false);
-//        popupWidget.show();
-//        popupWidget.addOKHandler(new ClickHandler() {
-//            @Override
-//            public void onClick(ClickEvent event) {
-//                popupWidget.hide();
-//            }
-//        });
-        return true;
+    private void showErrorPopup(String errorMsg) {
+        popupWidget = new PopupWidget("Invalid data!", false);
+        popupWidget.setContent(new Label(errorMsg));
+        popupWidget.show();
+        popupWidget.addOKHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                popupWidget.hide();
+            }
+        });
     }
     
     private void clearForm() {
@@ -147,14 +147,7 @@ public class AddRemoveClientsPage extends WebPage {
             }
             
             public void onFailure(Throwable caught) {
-                popupWidget = new PopupWidget("Invalid data!", false);
-                popupWidget.show();
-                popupWidget.addOKHandler(new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        popupWidget.hide();
-                    }
-                });
+                showErrorPopup(caught.getMessage());
             }
         };
         
@@ -164,6 +157,12 @@ public class AddRemoveClientsPage extends WebPage {
                 ClientDTO.Gender gender = ClientDTO.Gender.FEMALE;
                 if(genderMRadio.getValue() == true) {
                     gender = ClientDTO.Gender.MALE;
+                }
+                
+                if(passwordBox.getValue().equals("")
+                        ||(passwordBox.getValue() != confirmPasswordBox.getValue())) {
+                    showErrorPopup("Passwords don't match.");
+                    return;
                 }
                 
                 try {
@@ -178,12 +177,11 @@ public class AddRemoveClientsPage extends WebPage {
                                                     dateOfBirth,
                                                     addressBox.getValue(),
                                                     emailBox.getValue());
-                    if(validateForm()) {
-                        getService().createClient(client, updateClientsCallback);
-                    }
+                    
+                    getService().createClient(client, updateClientsCallback);
                 }
                 catch(Exception e) {
-                    
+                    showErrorPopup("Date must be on the format dd/mm/yyy. E.g.: 01/01/1985");
                 }
             }
         });
@@ -192,9 +190,26 @@ public class AddRemoveClientsPage extends WebPage {
             @Override
             public void onClick(ClickEvent event) {
                 try {
-                    int idx = clientsList.getSelectedIndex();
-                    String idStr = clientsList.getValue(idx);
-                    getService().removeClient(Long.decode(idStr), updateClientsCallback);
+                    popupWidget = new PopupWidget("Confirmation box", true);
+                    popupWidget.setContent(new Label("Are you sure?"));
+                    popupWidget.show();
+                    
+                    popupWidget.addOKHandler(new ClickHandler() {
+                        @Override
+                        public void onClick(ClickEvent event) {
+                            int idx = clientsList.getSelectedIndex();
+                            String idStr = clientsList.getValue(idx);
+                            getService().removeClient(Long.decode(idStr), updateClientsCallback);
+                            popupWidget.hide();
+                        }
+                    });
+                    
+                    popupWidget.addCancelHandler(new ClickHandler() {
+                        @Override
+                        public void onClick(ClickEvent event) {
+                            popupWidget.hide();
+                        }
+                    });
                 }
                 catch(IndexOutOfBoundsException e) {
                 }

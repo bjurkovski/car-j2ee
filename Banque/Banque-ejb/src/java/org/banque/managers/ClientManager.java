@@ -29,7 +29,7 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
 
     @Override
     public ClientDTO createClient(ClientDTO client) throws BanqueException {
-        return createClient(client.getName(), client.getLastName(), client.getPassword(), client.getGender(), client.getDateOfBirth(), client.getAddress(), client.getEmail());
+        return createClient(client.getName(), client.getLastName(), client.getPassword(), client.getGender(), client.getDateOfBirth(), client.getAddress(), client.getEmail(), client.isAdmin());
     }
 
     @Override
@@ -187,10 +187,9 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
         try {
             Query query;
             if(exactMatch)
-                query = em.createNamedQuery(Client.FIND_BY_EMAIL);
+                query = em.createNamedQuery(Client.FIND_BY_EMAIL_EQUAL).setParameter("email", searchString);
             else
-                query = em.createNamedQuery(Client.FIND_BY_EMAIL_EQUAL);
-            query.setParameter("email", "%" + searchString + "%");
+                query = em.createNamedQuery(Client.FIND_BY_EMAIL).setParameter("email", "%" + searchString + "%");
             List<Client> results = query.getResultList();
             for (Client c : results) {
                 _return.add(createClientDTO(c));
@@ -272,13 +271,24 @@ public class ClientManager extends PersonManager implements IClientManagerLocal 
             throw new BanqueException(BanqueException.ErrorType.CLIENT_NULL_EMAIL);
         }
         
-        List<ClientDTO> lc = findClientsByEmail(client.getEmail(), true);
+        List<ClientDTO> lc = null;
+        try {
+            lc = findClientsByEmail(client.getEmail(), true);
+        } catch(BanqueException e) {
+        }
+        
         if(lc != null && lc.size() > 0) {
             throw new BanqueException(BanqueException.ErrorType.CLIENT_EMAIL_ALREADY_USED);
         }
         
+        ClientDTO c = null;
+        try {
+            c = findClient(client.getId());
+        } catch(BanqueException e) {
+        }
+        
         //ID cannot exist and if it exists, must be the same as us
-        if (findClient(client.getId()) != null && findClient(client.getId()).getId() != client.getId()) {
+        if (c != null && c.getId() != client.getId()) {
             throw new BanqueException(BanqueException.ErrorType.CLIENT_ID_ALREADY_EXISTS);
         }
 

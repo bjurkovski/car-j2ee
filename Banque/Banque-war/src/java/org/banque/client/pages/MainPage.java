@@ -78,22 +78,6 @@ public class MainPage extends WebPage {
     public MainPage() {
         sessionManager.registerWebPage(this);
         setupPage();
-        createAdminAccount();
-    }
-    
-    /*
-     * This is just a development method. DO NOT use in production.
-     * It checks if the database is empty and then creates a default
-     * admin account.
-     */
-    private void createAdminAccount() {
-        ClientDTO admin = new ClientDTO("root-name", "root-lastname", "admin", ClientDTO.Gender.MALE, new Date(), "My Address", "root@admin.com", true);
-        getService().createClient(admin, new AsyncCallback<Void>() {
-            @Override
-            public void onFailure(Throwable caught) { menuPanel.add(new Label(caught.toString())); }
-            @Override
-            public void onSuccess(Void result) { menuPanel.add(new Label("foi")); }
-        });
     }
     
     public void setupPage() {
@@ -125,7 +109,10 @@ public class MainPage extends WebPage {
             @Override
             public void onClick(ClickEvent event) {
                 try {
-                    sessionManager.login(loginBox.getValue(), passwBox.getValue());
+                    if(sessionManager.login(loginBox.getValue(), passwBox.getValue())) {
+                        loginBox.setText("");
+                        passwBox.setText("");
+                    }
                 } catch(Exception e) {
                     mainPanel.add(new Label(e.toString()), DockPanel.WEST);
                 }
@@ -141,13 +128,23 @@ public class MainPage extends WebPage {
         
         HorizontalPanel loginPanel = new HorizontalPanel();
         if(sessionManager.isLoggedIn()) {
+            loginPanel.add(new Label("Logged in as " + sessionManager.getUsername() + " "));
+            if(sessionManager.isAdmin()) {
+                loginPanel.add(new Label("(Administrator) "));
+            }
             loginPanel.add(logoutLink);
         }
         else {
+            loginPanel.add(new Label("e-mail: "));
             loginPanel.add(loginBox);
+            loginPanel.add(new Label("password: "));
             loginPanel.add(passwBox);
             loginPanel.add(loginLink);
+            loginPanel.setCellVerticalAlignment(loginPanel.getWidget(0), HorizontalPanel.ALIGN_MIDDLE);
+            loginPanel.setCellVerticalAlignment(loginPanel.getWidget(2), HorizontalPanel.ALIGN_MIDDLE);
+            loginPanel.setCellVerticalAlignment(loginPanel.getWidget(4), HorizontalPanel.ALIGN_MIDDLE);
         }
+        loginPanel.setSpacing(5);
         
         menuPanel.clear();
         menuPanel.add(loginPanel);

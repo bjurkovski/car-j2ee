@@ -22,6 +22,7 @@ import org.banque.client.BanqueService;
 import org.banque.client.BanqueServiceAsync;
 import org.banque.client.SessionManager;
 import org.banque.client.pages.WebPage;
+import org.banque.client.ui.PopupWidget;
 import org.banque.dtos.AccountDTO;
 import org.banque.dtos.ClientDTO;
 
@@ -42,6 +43,7 @@ public class AddRemoveAccountsPage extends WebPage {
     private CheckBox emailWhenNegative;
     private Button addAccountButton;
     private Button removeAccountButton;
+    private PopupWidget popupWidget;
     
     private AsyncCallback<Void> updateAccountsCallback;
     
@@ -94,6 +96,21 @@ public class AddRemoveAccountsPage extends WebPage {
         setupPage();
     }
     
+    private void showConfirmBox(ClickHandler onConfirm) {
+        popupWidget = new PopupWidget("Confirmation box", true);
+        popupWidget.setContent(new Label("Are you sure?"));
+        popupWidget.show();
+
+        popupWidget.addOKHandler(onConfirm);
+
+        popupWidget.addCancelHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                popupWidget.hide();
+            }
+        });
+    }
+    
     public void setupPage() {
         vPanel = new VerticalPanel();
         pageTitle = new Label("Manage Accounts");
@@ -128,7 +145,11 @@ public class AddRemoveAccountsPage extends WebPage {
                 try {
                     int selectedIdx = clientsList.getSelectedIndex();
                     Long clientId = Long.valueOf(clientsList.getValue(selectedIdx));
-                    getService().createAccount(clientId, updateAccountsCallback);
+                    double initialBalance = 0;
+                    try {
+                        initialBalance = Double.valueOf(balanceBox.getValue());
+                    } catch(NumberFormatException e) { /* do_nothing(); */ }
+                    getService().createAccount(clientId, initialBalance, emailWhenNegative.getValue(), updateAccountsCallback);
                 } catch(IndexOutOfBoundsException e) {
                 }
             }
@@ -137,9 +158,15 @@ public class AddRemoveAccountsPage extends WebPage {
         removeAccountButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                int selectedIdx = accountsList.getSelectedIndex();
-                Long accountId = Long.valueOf(accountsList.getValue(selectedIdx));
-                getService().removeAccount(accountId, updateAccountsCallback);
+                showConfirmBox(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        int selectedIdx = accountsList.getSelectedIndex();
+                        Long accountId = Long.valueOf(accountsList.getValue(selectedIdx));
+                        getService().removeAccount(accountId, updateAccountsCallback);
+                        popupWidget.hide();
+                    }
+                });
             }
         });
         
