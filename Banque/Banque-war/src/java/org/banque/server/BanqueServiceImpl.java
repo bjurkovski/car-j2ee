@@ -9,6 +9,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -28,10 +29,12 @@ import org.banque.managers.interfaces.IClientManagerLocal;
  */
 public class BanqueServiceImpl extends RemoteServiceServlet implements BanqueService {
     @EJB
-    IClientManagerLocal clientManager;
+    private IClientManagerLocal clientManager;
     
     @EJB
-    IAccountManagerLocal accountManager;
+    private IAccountManagerLocal accountManager;
+    
+    private String sessionId = null;
     
     @Override
     public String[] login(String email, String password) {
@@ -42,7 +45,9 @@ public class BanqueServiceImpl extends RemoteServiceServlet implements BanqueSer
             if(lc != null && lc.size() > 0) {
                 ClientDTO client = lc.get(0);
                 if(clientManager.authenticateClient(client.getId(), password) != null) {
-                    ret[0] = "1";
+                    Random randomizer = new Random(new Date().getTime());
+                    sessionId = String.valueOf(randomizer.nextInt());
+                    ret[0] = sessionId;
                     ret[1] = email;
                     if(client.isAdmin()) ret[2] = "admin";
                     else ret[2] = "user";
@@ -56,7 +61,7 @@ public class BanqueServiceImpl extends RemoteServiceServlet implements BanqueSer
     
     @Override
     public void logout() {
-        
+        sessionId = null;
     }
 
     @Override

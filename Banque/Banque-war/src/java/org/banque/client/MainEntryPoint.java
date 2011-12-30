@@ -42,22 +42,13 @@ public class MainEntryPoint implements EntryPoint {
      */
     public void onModuleLoad() {
         final MainPage page = new MainPage();
-        final Label label = new Label("Hello, GWT!!!");
-        final Button button = new Button("Click me!");
-        
-        button.addClickHandler(new ClickHandler() {
-
-            public void onClick(ClickEvent event) {
-                label.setVisible(!label.isVisible());
-            }
-        });
         
         /*
         RootPanel.get().add(button);
         RootPanel.get().add(label);
          */
         
-        RootPanel.get().add(page.getWidget());
+        RootPanel.get("container").add(page.getWidget());
         
         createAdminAccount();
     }

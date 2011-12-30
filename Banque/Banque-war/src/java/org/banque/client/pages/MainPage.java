@@ -40,8 +40,8 @@ public class MainPage extends WebPage {
     protected VerticalPanel menuPanel = new VerticalPanel();
     protected TextBox loginBox = new TextBox();
     protected PasswordTextBox passwBox = new PasswordTextBox();
-    protected Anchor loginLink = new Anchor("Login");
-    protected Anchor logoutLink = new Anchor("Logout");
+    protected Anchor loginLink;
+    protected Anchor logoutLink;
     
     protected Widget currentPage = null;
     protected ManageClientsPage manageClientsPage = new ManageClientsPage();
@@ -105,16 +105,17 @@ public class MainPage extends WebPage {
         Label title = new Label("Banque Alpin");
         title.setStyleName("title");
         
+        loginLink = new Anchor("Login");
+        logoutLink = new Anchor("Logout");
+        
         loginLink.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 try {
-                    if(sessionManager.login(loginBox.getValue(), passwBox.getValue())) {
-                        loginBox.setText("");
-                        passwBox.setText("");
-                    }
+                    sessionManager.login(loginBox.getValue(), passwBox.getValue());
+                    loginBox.setText("");
+                    passwBox.setText("");
                 } catch(Exception e) {
-                    mainPanel.add(new Label(e.toString()), DockPanel.WEST);
                 }
             }
         });
@@ -149,8 +150,6 @@ public class MainPage extends WebPage {
         menuPanel.clear();
         menuPanel.add(loginPanel);
         menuPanel.add(title);
-        //if(s == SessionManager.UserRole.ADMIN)
-        //    menuPanel.add(new Label("eh admin"));
         menuPanel.add(menuBar);
         
         menuPanel.setCellHorizontalAlignment(menuPanel.getWidget(0), VerticalPanel.ALIGN_RIGHT);
